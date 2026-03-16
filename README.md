@@ -70,48 +70,46 @@ A Reddit-style platform with **four-axis evaluation** (clarity, evidence, kindne
 
 ## Railway deployment
 
-### Deploy on push (GitHub Actions)
+Use Railway to deploy: connect your GitHub repo and Railway will build from the repo root Dockerfile and deploy on every push.
 
-A workflow in `.github/workflows/deploy.yml` deploys to Railway when you push to `main`.
+### 1. Create a Railway project
 
-**Setup:**
+1. Go to [railway.app](https://railway.app) and create a **New project**.
+2. Add **PostgreSQL**: in the project, click **+ New** → **Database** → **PostgreSQL**. Copy the `DATABASE_URL` from the PostgreSQL service variables (or from **Variables** in the project).
+3. Add your app: **+ New** → **GitHub Repo** → select this repo. Railway will add a service linked to the repo.
 
-1. In Railway: project **Settings → Tokens** → create a project token. Copy it.
-2. In GitHub: repo **Settings → Secrets and variables → Actions** → **New repository secret**:
-   - Name: `RAILWAY_TOKEN`, Value: the token from step 1.
-3. If you have multiple services in the same project, create a second secret:
-   - Name: `RAILWAY_SERVICE_ID`, Value: the service ID (from the service’s **Settings** URL or **Variables** in Railway).
+### 2. Configure the app service
 
-Pushing to `main` will run the workflow and deploy using your Dockerfile.
+The repo includes `railway.json` and a root **Dockerfile**, so Railway will use them automatically. You only need to set variables:
 
-### Manual / dashboard setup
+- In the **app service** (the one from GitHub), open **Variables** and add (or paste from the PostgreSQL service):
+  - `DATABASE_URL` – from the PostgreSQL service
+  - `JWT_SECRET` – a long random string (≥32 characters)
+  - `NODE_ENV` = `production`
+- Optionally set `NEXT_PUBLIC_API_URL` to your API URL (e.g. `https://your-app.railway.app/api`) if the web app needs it.
 
-1. **New project** – Create a new Railway project.
+### 3. Deploy trigger
 
-2. **PostgreSQL** – Add a PostgreSQL service. Copy the `DATABASE_URL` from the service variables.
+- **Option A – Railway’s GitHub deploy**: In the app service, **Settings** → **Deploy** → enable **Deploy on push** and choose the branch (e.g. `main`). Every push to that branch will build and deploy.
+- **Option B – GitHub Actions**: The workflow in `.github/workflows/deploy.yml` runs `railway up` on push to `main`. You need a **project token** in Railway (project **Settings** → **Tokens**) and add it in GitHub as a repo secret named `RAILWAY_TOKEN`. If you have multiple services, add `RAILWAY_SERVICE_ID` as well.
 
-3. **API service** – Add a new service from this repo (or from the Dockerfile):
-   - **Build**: Use the Dockerfile at repo root, or set build command to `pnpm install && pnpm run build` and root directory to the repo root.
-   - **Start**: If using Dockerfile, the image runs the API and can serve the Next.js export (see Dockerfile). If not using Docker, set start command to `pnpm run start --filter api` (after building) and ensure the API listens on `PORT` (Railway sets this).
-   - **Variables**:
-     - `DATABASE_URL` – from the PostgreSQL service
-     - `JWT_SECRET` – generate a long random string (≥32 chars)
-     - `NODE_ENV=production`
-     - Optionally `NEXT_PUBLIC_API_URL` if the web is served from the same origin (e.g. `https://your-app.railway.app/api`).
+### 4. Run migrations after first deploy
 
-4. **Migrations** – Run migrations once after deploy (e.g. via one-off command or in build):
+After the first successful deploy, run migrations once. In Railway: app service → **Settings** → run a one-off command, or use the **Shell** tab:
 
-   ```bash
-   pnpm run db:migrate
-   ```
+```bash
+pnpm run db:migrate
+```
 
-   Or from `apps/api`: `npx prisma migrate deploy`.
+Or from the repo root with Railway CLI: `railway run pnpm run db:migrate`.
 
-5. **Seed** (optional):
+### 5. Seed (optional)
 
-   ```bash
-   pnpm run seed
-   ```
+```bash
+pnpm run seed
+```
+
+(Same as above: one-off in Railway or `railway run pnpm run seed`.)
 
 ## Scripts
 
