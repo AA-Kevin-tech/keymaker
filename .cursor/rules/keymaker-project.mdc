@@ -1,0 +1,41 @@
+---
+description: Keymaker project philosophy and coding standards
+alwaysApply: true
+---
+
+# Keymaker Project Rules
+
+## Product philosophy (non-negotiable)
+
+- No upvotes, downvotes, agree/disagree, or single karma number.
+- Evaluation is four-axis only: clarity, evidence, kindness, novelty.
+- Do not silently introduce traditional social-media mechanics (likes, hearts, popularity scores).
+- Schema and UI must support multidimensional evaluation; do not flatten to one score in the product.
+
+## Code and architecture
+
+- Keep code maintainable and explicit. Prefer TypeScript and strong typing.
+- Keep business logic out of controllers; put it in services.
+- Ranking, aggregate recomputation, and reputation updates live in services only.
+- Never trust client-supplied aggregate or ranking values; always compute server-side.
+- Validate all write inputs.
+- Keep the ranking formula readable and easy to modify.
+- Avoid premature optimization and clever abstractions unless they clearly reduce complexity.
+- Use clear naming over short naming.
+- Document major tradeoffs in comments or README.
+
+## Operations and data
+
+- Prefer simple Railway deployment over extra infrastructure.
+- Keep PostgreSQL schema clean and migration-safe.
+- Favor soft deletes for posts/comments where practical.
+
+## Dependencies and scope
+
+- Avoid adding dependencies unless clearly justified.
+- Build the MVP first; do not drift into nonessential features.
+- Keep the project easy for one developer to own and extend.
+
+## UI
+
+- UI should be minimal, readable, and functional.
