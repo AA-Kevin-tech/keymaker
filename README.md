@@ -70,6 +70,22 @@ A Reddit-style platform with **four-axis evaluation** (clarity, evidence, kindne
 
 ## Railway deployment
 
+### Deploy on push (GitHub Actions)
+
+A workflow in `.github/workflows/deploy.yml` deploys to Railway when you push to `main`.
+
+**Setup:**
+
+1. In Railway: project **Settings → Tokens** → create a project token. Copy it.
+2. In GitHub: repo **Settings → Secrets and variables → Actions** → **New repository secret**:
+   - Name: `RAILWAY_TOKEN`, Value: the token from step 1.
+3. If you have multiple services in the same project, create a second secret:
+   - Name: `RAILWAY_SERVICE_ID`, Value: the service ID (from the service’s **Settings** URL or **Variables** in Railway).
+
+Pushing to `main` will run the workflow and deploy using your Dockerfile.
+
+### Manual / dashboard setup
+
 1. **New project** – Create a new Railway project.
 
 2. **PostgreSQL** – Add a PostgreSQL service. Copy the `DATABASE_URL` from the service variables.

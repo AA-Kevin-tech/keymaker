@@ -1,0 +1,26 @@
+# Deploy to Railway on push to main.
+# Requires repo secrets: RAILWAY_TOKEN (required), RAILWAY_SERVICE_ID (optional, for multi-service projects).
+
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Deploy to Railway
+        run: |
+          if [ -n "${{ secrets.RAILWAY_SERVICE_ID }}" ]; then
+            railway up --service="${{ secrets.RAILWAY_SERVICE_ID }}"
+          else
+            railway up
+          fi
