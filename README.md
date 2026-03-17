@@ -68,12 +68,24 @@ A Reddit-style platform with **four-axis evaluation** (clarity, evidence, kindne
 
    Ensure `NEXT_PUBLIC_API_URL` points at `http://localhost:3001/api` so the web app can talk to the API.
 
+## Tests
+
+API tests use Vitest and Supertest. They require a running PostgreSQL (use your dev DB or a separate test DB).
+
+```bash
+pnpm run test
+```
+
+Or from `apps/api`: `pnpm run test` (or `pnpm run test:watch` for watch mode). Set `DATABASE_URL` and `JWT_SECRET` (e.g. in `.env` or export them). CI runs lint and test on push/PR; see [.github/workflows/ci.yml](.github/workflows/ci.yml).
+
 ## Scripts
 
 | Script         | Description                    |
 |----------------|--------------------------------|
 | `pnpm dev`     | Run API + web in dev           |
 | `pnpm build`   | Build all packages             |
+| `pnpm test`    | Run API tests (Vitest)         |
+| `pnpm lint`    | Type-check / lint              |
 | `pnpm seed`    | Seed database (from api)       |
 | `pnpm db:generate` | Generate Prisma client   |
 | `pnpm db:migrate`  | Deploy migrations          |
