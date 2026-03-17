@@ -1,15 +1,9 @@
 import type { Request, Response } from "express";
 import * as ratingsService from "./ratings.service.js";
-import { validateRatingBody } from "../../middleware/validate.js";
 
 export async function upsert(req: Request, res: Response): Promise<void> {
   if (!req.user) {
     res.status(401).json({ error: "Authentication required" });
-    return;
-  }
-  const result = validateRatingBody(req.body);
-  if (!result.valid) {
-    res.status(400).json({ error: result.message });
     return;
   }
   try {

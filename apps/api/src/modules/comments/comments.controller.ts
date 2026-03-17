@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import * as commentsService from "./comments.service.js";
-import { validateCreateCommentBody } from "./comments.schema.js";
 
 function toCommentResponse(c: Awaited<ReturnType<typeof commentsService.create>>) {
   return {
@@ -24,11 +23,6 @@ function toCommentResponse(c: Awaited<ReturnType<typeof commentsService.create>>
 export async function create(req: Request, res: Response): Promise<void> {
   if (!req.user) {
     res.status(401).json({ error: "Authentication required" });
-    return;
-  }
-  const result = validateCreateCommentBody(req.body);
-  if (!result.valid) {
-    res.status(400).json({ error: result.message });
     return;
   }
   try {

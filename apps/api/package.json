@@ -13,6 +13,7 @@
     "@keymaker/shared": "workspace:*",
     "@prisma/client": "^5.22.0",
     "bcryptjs": "^2.4.3",
+    "zod": "^3.22.4",
     "cors": "^2.8.5",
     "express": "^4.21.0",
     "jsonwebtoken": "^9.0.2"

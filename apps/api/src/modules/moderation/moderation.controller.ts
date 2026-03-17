@@ -1,35 +1,14 @@
 import type { Request, Response } from "express";
 import * as moderationService from "./moderation.service.js";
 
-function validateCreateBody(body: unknown): { valid: true; data: Record<string, unknown> } | { valid: false; message: string } {
-  if (!body || typeof body !== "object") return { valid: false, message: "Body must be an object" };
-  const b = body as Record<string, unknown>;
-  if (typeof b.actionType !== "string" || !b.actionType.trim()) return { valid: false, message: "actionType is required" };
-  if (typeof b.targetType !== "string" || !b.targetType.trim()) return { valid: false, message: "targetType is required" };
-  if (typeof b.targetId !== "string" || !b.targetId.trim()) return { valid: false, message: "targetId is required" };
-  return { valid: true, data: b };
-}
-
 export async function create(req: Request, res: Response): Promise<void> {
   if (!req.user) {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
-  const result = validateCreateBody(req.body);
-  if (!result.valid) {
-    res.status(400).json({ error: result.message });
-    return;
-  }
-  const body = req.body as {
-    actionType: string;
-    targetType: string;
-    targetId: string;
-    communityId?: string | null;
-    reason?: string | null;
-  };
   try {
     const action = await moderationService.create({
-      ...body,
+      ...req.body,
       moderatorId: req.user.id,
     });
     res.status(201).json({

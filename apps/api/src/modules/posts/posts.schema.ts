@@ -1,28 +1,15 @@
-import type { ValidationResult } from "../../middleware/validate.js";
+import { z } from "zod";
 
-export function validateCreatePostBody(body: unknown): ValidationResult {
-  if (!body || typeof body !== "object") return { valid: false, message: "Body must be an object" };
-  const b = body as Record<string, unknown>;
-  if (typeof b.title !== "string" || !b.title.trim()) {
-    return { valid: false, message: "title is required" };
-  }
-  if (typeof b.communityId !== "string" || !b.communityId.trim()) {
-    return { valid: false, message: "communityId is required" };
-  }
-  if (b.body !== undefined && b.body !== null && typeof b.body !== "string") {
-    return { valid: false, message: "body must be a string or null" };
-  }
-  return { valid: true };
-}
+export const createPostSchema = z.object({
+  title: z.string().min(1, "title is required").trim().max(500),
+  body: z.string().trim().nullable().optional(),
+  communityId: z.string().min(1, "communityId is required").trim(),
+});
 
-export function validateUpdatePostBody(body: unknown): ValidationResult {
-  if (!body || typeof body !== "object") return { valid: false, message: "Body must be an object" };
-  const b = body as Record<string, unknown>;
-  if (b.title !== undefined && (typeof b.title !== "string" || !b.title.trim())) {
-    return { valid: false, message: "title must be a non-empty string" };
-  }
-  if (b.body !== undefined && b.body !== null && typeof b.body !== "string") {
-    return { valid: false, message: "body must be a string or null" };
-  }
-  return { valid: true };
-}
+export const updatePostSchema = z.object({
+  title: z.string().min(1).trim().max(500).optional(),
+  body: z.string().trim().nullable().optional(),
+});
+
+export type CreatePostInput = z.infer<typeof createPostSchema>;
+export type UpdatePostInput = z.infer<typeof updatePostSchema>;

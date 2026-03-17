@@ -1,6 +1,5 @@
 import type { Request, Response } from "express";
 import * as postsService from "./posts.service.js";
-import { validateCreatePostBody, validateUpdatePostBody } from "./posts.schema.js";
 
 function toPostResponse(post: Awaited<ReturnType<typeof postsService.getById>>) {
   if (!post) return null;
@@ -28,11 +27,6 @@ export async function create(req: Request, res: Response): Promise<void> {
     res.status(401).json({ error: "Authentication required" });
     return;
   }
-  const result = validateCreatePostBody(req.body);
-  if (!result.valid) {
-    res.status(400).json({ error: result.message });
-    return;
-  }
   try {
     const post = await postsService.create({
       ...req.body,
@@ -55,11 +49,6 @@ export async function getById(req: Request, res: Response): Promise<void> {
 }
 
 export async function update(req: Request, res: Response): Promise<void> {
-  const result = validateUpdatePostBody(req.body);
-  if (!result.valid) {
-    res.status(400).json({ error: result.message });
-    return;
-  }
   try {
     const post = await postsService.update(req.params.id, req.body);
     res.json(toPostResponse(post));

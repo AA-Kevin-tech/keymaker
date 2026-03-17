@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Card } from "@/components/ui/Card";
 import { api } from "@/lib/api";
-import { setToken, setUser } from "@/lib/auth";
+import { setToken } from "@/lib/auth";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -26,7 +26,6 @@ export default function LoginPage() {
         { username, password }
       );
       setToken(res.token);
-      setUser(res.user.id);
       router.push("/communities");
       router.refresh();
     } catch (e) {
