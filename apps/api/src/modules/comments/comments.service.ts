@@ -20,3 +20,26 @@ export async function listByPostId(postId: string, includeDeleted = false) {
     include: { author: { select: { id: true, username: true } } },
   });
 }
+
+export async function getById(id: string, includeDeleted = false) {
+  return prisma.comment.findFirst({
+    where: { id, ...(includeDeleted ? {} : { deletedAt: null }) },
+    include: { author: { select: { id: true, username: true } } },
+  });
+}
+
+export async function softDelete(id: string) {
+  return prisma.comment.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+    include: { author: { select: { id: true, username: true } } },
+  });
+}
+
+export async function restore(id: string) {
+  return prisma.comment.update({
+    where: { id },
+    data: { deletedAt: null },
+    include: { author: { select: { id: true, username: true } } },
+  });
+}

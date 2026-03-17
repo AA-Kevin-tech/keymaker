@@ -34,6 +34,7 @@ export interface Post {
   cachedScore: number;
   ratingCount: number;
   createdAt: string;
+  deletedAt?: string | null;
 }
 
 export interface Comment {
@@ -50,6 +51,7 @@ export interface Comment {
   cachedScore: number;
   ratingCount: number;
   createdAt: string;
+  deletedAt?: string | null;
 }
 
 export interface RatingDimensions {

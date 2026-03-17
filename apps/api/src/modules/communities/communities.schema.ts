@@ -15,3 +15,13 @@ export const createCommunitySchema = z.object({
 });
 
 export type CreateCommunityInput = z.infer<typeof createCommunitySchema>;
+
+export const updateCommunitySettingsSchema = z.object({
+  weightClarity: z.number().optional(),
+  weightEvidence: z.number().optional(),
+  weightKindness: z.number().optional(),
+  weightNovelty: z.number().optional(),
+  decayHalfLifeSeconds: z.number().int().positive().optional(),
+});
+
+export type UpdateCommunitySettingsInput = z.infer<typeof updateCommunitySettingsSchema>;

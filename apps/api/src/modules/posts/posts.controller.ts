@@ -1,7 +1,9 @@
 import type { Request, Response } from "express";
 import * as postsService from "./posts.service.js";
 
-function toPostResponse(post: Awaited<ReturnType<typeof postsService.getById>>) {
+function toPostResponse(
+  post: NonNullable<Awaited<ReturnType<typeof postsService.getById>>> | Awaited<ReturnType<typeof postsService.softDelete>>
+) {
   if (!post) return null;
   return {
     id: post.id,
@@ -40,8 +42,13 @@ export async function create(req: Request, res: Response): Promise<void> {
 
 export async function getById(req: Request, res: Response): Promise<void> {
   const { id } = req.params;
-  const post = await postsService.getById(id);
+  const includeDeleted = req.query.includeDeleted === "true" || req.query.includeDeleted === "1";
+  const post = await postsService.getById(id, includeDeleted);
   if (!post) {
+    res.status(404).json({ error: "Post not found" });
+    return;
+  }
+  if (post.deletedAt && (!req.user || req.user.id !== post.authorId)) {
     res.status(404).json({ error: "Post not found" });
     return;
   }
@@ -49,10 +56,55 @@ export async function getById(req: Request, res: Response): Promise<void> {
 }
 
 export async function update(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
   try {
+    const existing = await postsService.getById(req.params.id, true);
+    if (!existing || existing.authorId !== req.user.id) {
+      res.status(403).json({ error: "Only the author can update this post" });
+      return;
+    }
     const post = await postsService.update(req.params.id, req.body);
     res.json(toPostResponse(post));
   } catch (e) {
     res.status(404).json({ error: e instanceof Error ? e.message : "Update failed" });
+  }
+}
+
+export async function hide(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  try {
+    const existing = await postsService.getById(req.params.id, true);
+    if (!existing || existing.authorId !== req.user.id) {
+      res.status(403).json({ error: "Only the author can hide this post" });
+      return;
+    }
+    const post = await postsService.softDelete(req.params.id);
+    res.json(toPostResponse(post));
+  } catch (e) {
+    res.status(404).json({ error: e instanceof Error ? e.message : "Hide failed" });
+  }
+}
+
+export async function restorePost(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  try {
+    const existing = await postsService.getById(req.params.id, true);
+    if (!existing || existing.authorId !== req.user.id) {
+      res.status(403).json({ error: "Only the author can restore this post" });
+      return;
+    }
+    const post = await postsService.restore(req.params.id);
+    res.json(toPostResponse(post));
+  } catch (e) {
+    res.status(404).json({ error: e instanceof Error ? e.message : "Restore failed" });
   }
 }

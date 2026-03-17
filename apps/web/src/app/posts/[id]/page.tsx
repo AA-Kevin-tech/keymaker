@@ -1,8 +1,8 @@
-import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 import { PostView } from "@/components/post/PostView";
+import { PostNotFoundOrHidden } from "@/components/post/PostNotFoundOrHidden";
 import type { Post, Comment } from "@/lib/types";
 
 interface Params {
@@ -33,7 +33,9 @@ export default async function PostPage({ params }: { params: Params }) {
     getComments(postId),
   ]);
 
-  if (!post) notFound();
+  if (!post) {
+    return <PostNotFoundOrHidden postId={postId} />;
+  }
 
   return <PostView post={post} comments={comments} />;
 }

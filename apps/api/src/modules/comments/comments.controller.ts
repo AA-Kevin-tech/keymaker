@@ -58,3 +58,61 @@ export async function listByPostId(req: Request, res: Response): Promise<void> {
     })),
   });
 }
+
+function toCommentResponseFromComment(
+  c: Awaited<ReturnType<typeof commentsService.getById>>
+) {
+  if (!c) return null;
+  return {
+    id: c.id,
+    body: c.body,
+    postId: c.postId,
+    authorId: c.authorId,
+    parentId: c.parentId,
+    author: c.author,
+    cachedClarity: c.cachedClarity,
+    cachedEvidence: c.cachedEvidence,
+    cachedKindness: c.cachedKindness,
+    cachedNovelty: c.cachedNovelty,
+    cachedScore: c.cachedScore,
+    ratingCount: c.ratingCount,
+    createdAt: c.createdAt.toISOString(),
+    deletedAt: c.deletedAt?.toISOString() ?? null,
+  };
+}
+
+export async function hide(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  try {
+    const existing = await commentsService.getById(req.params.id, true);
+    if (!existing || existing.authorId !== req.user.id) {
+      res.status(403).json({ error: "Only the author can hide this comment" });
+      return;
+    }
+    const comment = await commentsService.softDelete(req.params.id);
+    res.json(toCommentResponseFromComment(comment));
+  } catch (e) {
+    res.status(404).json({ error: e instanceof Error ? e.message : "Hide failed" });
+  }
+}
+
+export async function restoreComment(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  try {
+    const existing = await commentsService.getById(req.params.id, true);
+    if (!existing || existing.authorId !== req.user.id) {
+      res.status(403).json({ error: "Only the author can restore this comment" });
+      return;
+    }
+    const comment = await commentsService.restore(req.params.id);
+    res.json(toCommentResponseFromComment(comment));
+  } catch (e) {
+    res.status(404).json({ error: e instanceof Error ? e.message : "Restore failed" });
+  }
+}

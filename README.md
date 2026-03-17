@@ -90,6 +90,22 @@ Or from `apps/api`: `pnpm run test` (or `pnpm run test:watch` for watch mode). S
 | `pnpm db:generate` | Generate Prisma client   |
 | `pnpm db:migrate`  | Deploy migrations          |
 
+## Ranking
+
+Feed order is determined by a **score** computed per post:
+
+- **Formula:** `score = timeDecay * dampenedContentScore`
+- **Time decay:** `0.5^(ageSeconds / decayHalfLifeSeconds)` — newer posts rank higher. Each community has a `decayHalfLifeSeconds` (default 24h = 86400).
+- **Content score:** `weightClarity*cachedClarity + weightEvidence*cachedEvidence + weightKindness*cachedKindness + weightNovelty*cachedNovelty`. Each community defines the four weights (default 1).
+- **Low-signal dampening:** If a post has fewer than `MIN_RATINGS_DAMPENING` ratings (see `packages/shared`), its content score is scaled by `ratingCount / MIN_RATINGS_DAMPENING` so posts with very few ratings don't dominate.
+
+Constants (in `packages/shared/src/constants.ts`):
+
+- `MIN_RATINGS_DAMPENING` — minimum ratings before content score is fully counted (default 2).
+- `DEFAULT_DECAY_HALF_LIFE_SECONDS` — default half-life for time decay (86400 = 24 hours).
+
+Community settings (stored in DB, editable via API and community settings UI): `weightClarity`, `weightEvidence`, `weightKindness`, `weightNovelty`, `decayHalfLifeSeconds`.
+
 ## Product rules
 
 - No upvotes, downvotes, agree/disagree, or single karma.

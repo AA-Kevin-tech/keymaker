@@ -7,3 +7,5 @@ import * as commentsController from "./comments.controller.js";
 export const commentsRoutes = Router();
 commentsRoutes.post("/", requireAuth, validateZod(createCommentSchema), commentsController.create);
 commentsRoutes.get("/by-post/:postId", commentsController.listByPostId);
+commentsRoutes.post("/:id/hide", requireAuth, commentsController.hide);
+commentsRoutes.post("/:id/restore", requireAuth, commentsController.restoreComment);

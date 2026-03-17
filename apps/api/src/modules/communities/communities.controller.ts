@@ -49,3 +49,27 @@ export async function create(req: Request, res: Response): Promise<void> {
     res.status(400).json({ error: message });
   }
 }
+
+export async function updateSettings(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  const { slug } = req.params;
+  const community = await communitiesService.updateSettings(slug, req.body);
+  if (!community) {
+    res.status(404).json({ error: "Community not found" });
+    return;
+  }
+  res.json({
+    id: community.id,
+    name: community.name,
+    slug: community.slug,
+    weightClarity: community.weightClarity,
+    weightEvidence: community.weightEvidence,
+    weightKindness: community.weightKindness,
+    weightNovelty: community.weightNovelty,
+    decayHalfLifeSeconds: community.decayHalfLifeSeconds,
+    createdAt: community.createdAt.toISOString(),
+  });
+}

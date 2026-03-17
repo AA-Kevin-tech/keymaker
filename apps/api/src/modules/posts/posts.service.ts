@@ -36,5 +36,14 @@ export async function softDelete(id: string) {
   return prisma.post.update({
     where: { id },
     data: { deletedAt: new Date() },
+    include: { author: { select: { id: true, username: true } }, community: { select: { id: true, name: true, slug: true } } },
+  });
+}
+
+export async function restore(id: string) {
+  return prisma.post.update({
+    where: { id },
+    data: { deletedAt: null },
+    include: { author: { select: { id: true, username: true } }, community: { select: { id: true, name: true, slug: true } } },
   });
 }

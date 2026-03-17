@@ -1,5 +1,6 @@
 import { prisma } from "../../db/prisma.js";
 import type { CreateCommunityBody } from "./communities.types.js";
+import type { UpdateCommunitySettingsInput } from "./communities.schema.js";
 
 export async function list() {
   return prisma.community.findMany({
@@ -30,5 +31,21 @@ export async function create(body: CreateCommunityBody) {
       weightNovelty: body.weightNovelty ?? 1,
       decayHalfLifeSeconds: body.decayHalfLifeSeconds ?? 86400,
     },
+  });
+}
+
+export async function updateSettings(slug: string, body: UpdateCommunitySettingsInput) {
+  const community = await prisma.community.findUnique({ where: { slug } });
+  if (!community) return null;
+  const data: Record<string, number> = {};
+  if (body.weightClarity !== undefined) data.weightClarity = body.weightClarity;
+  if (body.weightEvidence !== undefined) data.weightEvidence = body.weightEvidence;
+  if (body.weightKindness !== undefined) data.weightKindness = body.weightKindness;
+  if (body.weightNovelty !== undefined) data.weightNovelty = body.weightNovelty;
+  if (body.decayHalfLifeSeconds !== undefined) data.decayHalfLifeSeconds = body.decayHalfLifeSeconds;
+  if (Object.keys(data).length === 0) return community;
+  return prisma.community.update({
+    where: { id: community.id },
+    data,
   });
 }
