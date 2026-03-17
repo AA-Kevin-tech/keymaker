@@ -11,6 +11,7 @@ export function setToken(token: string): void {
   localStorage.setItem(TOKEN_KEY, token);
 }
 
+/** @deprecated Use GET /auth/me for current user. Kept for backward compat. */
 export function getUserId(): string | null {
   if (typeof window === "undefined") return null;
   return localStorage.getItem(USER_ID_KEY);
@@ -29,4 +30,9 @@ export function clearToken(): void {
 
 export function isAuthenticated(): boolean {
   return !!getToken();
+}
+
+export interface CurrentUser {
+  id: string;
+  username: string;
 }

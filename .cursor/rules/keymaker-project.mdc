@@ -26,7 +26,7 @@ alwaysApply: true
 
 ## Operations and data
 
-- Prefer simple Railway deployment over extra infrastructure.
+- Prefer simple deployment over extra infrastructure.
 - Keep PostgreSQL schema clean and migration-safe.
 - Favor soft deletes for posts/comments where practical.
 

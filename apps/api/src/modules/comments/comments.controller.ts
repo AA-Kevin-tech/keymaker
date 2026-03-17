@@ -22,13 +22,20 @@ function toCommentResponse(c: Awaited<ReturnType<typeof commentsService.create>>
 }
 
 export async function create(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
   const result = validateCreateCommentBody(req.body);
   if (!result.valid) {
     res.status(400).json({ error: result.message });
     return;
   }
   try {
-    const comment = await commentsService.create(req.body);
+    const comment = await commentsService.create({
+      ...req.body,
+      authorId: req.user.id,
+    });
     res.status(201).json(toCommentResponse(comment));
   } catch (e) {
     res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });

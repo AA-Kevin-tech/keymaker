@@ -1,5 +1,5 @@
 # Keymaker: multi-stage build for API + optional static web
-# Railway can run this as a single service; set PORT and DATABASE_URL.
+# Set PORT and DATABASE_URL in the run environment.
 
 FROM node:20-alpine AS base
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
@@ -32,7 +32,7 @@ COPY . .
 RUN pnpm run build --filter @keymaker/shared
 RUN pnpm run build --filter web
 
-# Production: run API only (Railway runs one process; serve API, web can be separate or reverse-proxied)
+# Production: run API only (single process; web can be separate or reverse-proxied)
 FROM base AS runner
 ENV NODE_ENV=production
 COPY --from=api-builder /app/apps/api ./apps/api

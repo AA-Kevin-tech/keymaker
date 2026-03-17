@@ -7,11 +7,14 @@ function validateCreateBody(body: unknown): { valid: true; data: Record<string, 
   if (typeof b.actionType !== "string" || !b.actionType.trim()) return { valid: false, message: "actionType is required" };
   if (typeof b.targetType !== "string" || !b.targetType.trim()) return { valid: false, message: "targetType is required" };
   if (typeof b.targetId !== "string" || !b.targetId.trim()) return { valid: false, message: "targetId is required" };
-  if (typeof b.moderatorId !== "string" || !b.moderatorId.trim()) return { valid: false, message: "moderatorId is required" };
   return { valid: true, data: b };
 }
 
 export async function create(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
   const result = validateCreateBody(req.body);
   if (!result.valid) {
     res.status(400).json({ error: result.message });
@@ -21,12 +24,14 @@ export async function create(req: Request, res: Response): Promise<void> {
     actionType: string;
     targetType: string;
     targetId: string;
-    moderatorId: string;
     communityId?: string | null;
     reason?: string | null;
   };
   try {
-    const action = await moderationService.create(body);
+    const action = await moderationService.create({
+      ...body,
+      moderatorId: req.user.id,
+    });
     res.status(201).json({
       id: action.id,
       actionType: action.actionType,

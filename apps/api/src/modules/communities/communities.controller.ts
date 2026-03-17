@@ -28,6 +28,10 @@ export async function getBySlug(req: Request, res: Response): Promise<void> {
 }
 
 export async function create(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
   const result = validateCreateCommunityBody(req.body);
   if (!result.valid) {
     res.status(400).json({ error: result.message });

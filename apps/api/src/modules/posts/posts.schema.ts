@@ -9,9 +9,6 @@ export function validateCreatePostBody(body: unknown): ValidationResult {
   if (typeof b.communityId !== "string" || !b.communityId.trim()) {
     return { valid: false, message: "communityId is required" };
   }
-  if (typeof b.authorId !== "string" || !b.authorId.trim()) {
-    return { valid: false, message: "authorId is required" };
-  }
   if (b.body !== undefined && b.body !== null && typeof b.body !== "string") {
     return { valid: false, message: "body must be a string or null" };
   }

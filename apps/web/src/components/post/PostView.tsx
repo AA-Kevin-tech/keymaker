@@ -5,7 +5,7 @@ import { PostDetail } from "./PostDetail";
 import { CommentThread } from "../comment/CommentThread";
 import { CommentComposer } from "../comment/CommentComposer";
 import { RatingWidget } from "../rating/RatingWidget";
-import { getToken, getUserId } from "@/lib/auth";
+import { getToken } from "@/lib/auth";
 import { api } from "@/lib/api";
 import type { Post, Comment } from "@/lib/types";
 
@@ -16,7 +16,6 @@ interface PostViewProps {
 
 export function PostView({ post, comments }: PostViewProps) {
   const token = getToken();
-  const raterId = getUserId();
 
   return (
     <main className="py-6">
@@ -29,16 +28,15 @@ export function PostView({ post, comments }: PostViewProps) {
         <RatingWidget
           targetType="post"
           targetId={post.id}
-          raterId={raterId ?? ""}
+          raterId=""
           token={token}
           onSubmit={async (dimensions) => {
-            if (!token || !raterId) throw new Error("Not logged in");
+            if (!token) throw new Error("Not logged in");
             await api.put(
               "/ratings",
               {
                 targetType: "post",
                 targetId: post.id,
-                raterId,
                 ...dimensions,
               },
               token
@@ -50,13 +48,13 @@ export function PostView({ post, comments }: PostViewProps) {
         <h2 className="text-lg font-medium mb-2">Comments</h2>
         <CommentComposer
           postId={post.id}
-          authorId={raterId ?? ""}
+          authorId=""
           token={token}
           onSubmit={async (body) => {
-            if (!token || !raterId) throw new Error("Not logged in");
+            if (!token) throw new Error("Not logged in");
             await api.post(
               "/comments",
-              { body, postId: post.id, authorId: raterId },
+              { body, postId: post.id },
               token
             );
           }}

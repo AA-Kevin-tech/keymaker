@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
 import { api } from "@/lib/api";
-import { getToken, getUserId } from "@/lib/auth";
+import { getToken } from "@/lib/auth";
 
 interface PostComposerProps {
   communityId: string;
@@ -35,17 +35,12 @@ export function PostComposer({
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const authorId = getUserId();
-    if (!authorId) {
-      setError("Session expired. Please log in again.");
-      return;
-    }
     setError(null);
     setLoading(true);
     try {
       await api.post(
         "/posts",
-        { title, body: body || null, communityId, authorId },
+        { title, body: body || null, communityId },
         token
       );
       setTitle("");

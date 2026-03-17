@@ -31,3 +31,14 @@ export async function login(req: Request, res: Response): Promise<void> {
     res.status(401).json({ error: message });
   }
 }
+
+/**
+ * GET /auth/me - return current user from JWT. Requires valid Bearer token.
+ */
+export async function getMe(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  res.json({ user: { id: req.user.id, username: req.user.username } });
+}

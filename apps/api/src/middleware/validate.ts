@@ -14,9 +14,6 @@ export function validateRatingBody(body: unknown): ValidationResult {
   if (typeof b.targetId !== "string" || !b.targetId.trim()) {
     return { valid: false, message: "targetId is required" };
   }
-  if (typeof b.raterId !== "string" || !b.raterId.trim()) {
-    return { valid: false, message: "raterId is required" };
-  }
   const score = (key: string): ValidationResult => {
     const v = b[key];
     if (typeof v !== "number" || !Number.isInteger(v) || v < SCORE_MIN || v > SCORE_MAX) {

@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { getToken, clearToken } from "@/lib/auth";
+import { useCurrentUser } from "@/lib/useCurrentUser";
 
 export function Navbar() {
   const pathname = usePathname();
   const token = getToken();
+  const { user } = useCurrentUser();
 
   return (
     <nav className="border-b bg-white px-4 py-3">
@@ -27,6 +29,14 @@ export function Navbar() {
           </Link>
           {token ? (
             <>
+              {user && (
+                <Link
+                  href={`/users/${user.username}`}
+                  className="text-gray-600 hover:text-gray-900"
+                >
+                  {user.username}
+                </Link>
+              )}
               <Link
                 href="/posts/create"
                 className="text-gray-600 hover:text-gray-900"

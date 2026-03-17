@@ -24,13 +24,20 @@ function toPostResponse(post: Awaited<ReturnType<typeof postsService.getById>>) 
 }
 
 export async function create(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
   const result = validateCreatePostBody(req.body);
   if (!result.valid) {
     res.status(400).json({ error: result.message });
     return;
   }
   try {
-    const post = await postsService.create(req.body);
+    const post = await postsService.create({
+      ...req.body,
+      authorId: req.user.id,
+    });
     res.status(201).json(toPostResponse(post));
   } catch (e) {
     res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });
