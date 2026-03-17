@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type IRouter } from "express";
 import { authRoutes } from "../modules/auth/auth.routes.js";
 import { usersRoutes } from "../modules/users/users.routes.js";
 import { communitiesRoutes } from "../modules/communities/communities.routes.js";
@@ -7,7 +7,7 @@ import { commentsRoutes } from "../modules/comments/comments.routes.js";
 import { ratingsRoutes } from "../modules/ratings/ratings.routes.js";
 import { moderationRoutes } from "../modules/moderation/moderation.routes.js";
 
-export const apiRouter = Router();
+export const apiRouter: IRouter = Router();
 
 apiRouter.get("/health", (_req, res) => {
   res.json({ status: "ok" });

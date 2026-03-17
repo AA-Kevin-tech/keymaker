@@ -39,8 +39,9 @@ export async function create(req: Request, res: Response): Promise<void> {
 export async function listByPostId(req: Request, res: Response): Promise<void> {
   const { postId } = req.params;
   const comments = await commentsService.listByPostId(postId);
+  type CommentItem = (Awaited<ReturnType<typeof commentsService.listByPostId>>)[number];
   res.json({
-    comments: comments.map((c) => ({
+    comments: comments.map((c: CommentItem) => ({
       id: c.id,
       body: c.body,
       postId: c.postId,

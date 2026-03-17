@@ -53,12 +53,14 @@ export async function getFeed(communitySlug: string, limit = 20, offset = 0) {
   });
 
   const now = new Date();
-  const withScore = posts.map((post) => ({
+  type PostWithAuthor = (typeof posts)[number];
+  const withScore = posts.map((post: PostWithAuthor) => ({
     post,
     score: computePostScore(post, community, now),
   }));
-  withScore.sort((a, b) => b.score - a.score);
+  type WithScore = { post: PostWithAuthor; score: number };
+  withScore.sort((a: WithScore, b: WithScore) => b.score - a.score);
 
   const paginated = withScore.slice(offset, offset + limit);
-  return paginated.map(({ post }) => post);
+  return paginated.map(({ post }: WithScore) => post);
 }

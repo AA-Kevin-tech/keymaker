@@ -9,7 +9,7 @@ export async function create(body: CreatePostBody) {
       communityId: body.communityId,
       authorId: body.authorId,
     },
-    include: { author: { select: { id: true, username: true } } },
+    include: { author: { select: { id: true, username: true } }, community: { select: { id: true, name: true, slug: true } } },
   });
 }
 
@@ -28,7 +28,7 @@ export async function update(id: string, body: UpdatePostBody) {
       ...(body.title !== undefined && { title: body.title.trim() }),
       ...(body.body !== undefined && { body: body.body?.trim() ?? null }),
     },
-    include: { author: { select: { id: true, username: true } } },
+    include: { author: { select: { id: true, username: true } }, community: { select: { id: true, name: true, slug: true } } },
   });
 }
 

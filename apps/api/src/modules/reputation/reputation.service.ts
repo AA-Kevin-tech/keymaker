@@ -5,10 +5,12 @@ import { prisma } from "../../db/prisma.js";
  * Simple mean per dimension; no time decay in MVP.
  */
 export async function recomputeForUser(userId: string): Promise<void> {
-  const postIds = (await prisma.post.findMany({ where: { authorId: userId }, select: { id: true } })).map((p) => p.id);
-  const commentIds = (await prisma.comment.findMany({ where: { authorId: userId }, select: { id: true } })).map(
-    (c) => c.id
-  );
+  const postIds = (
+    await prisma.post.findMany({ where: { authorId: userId }, select: { id: true } })
+  ).map((p: { id: string }) => p.id);
+  const commentIds = (
+    await prisma.comment.findMany({ where: { authorId: userId }, select: { id: true } })
+  ).map((c: { id: string }) => c.id);
 
   const postRatings = await prisma.rating.findMany({
     where: { targetType: "post", targetId: { in: postIds } },

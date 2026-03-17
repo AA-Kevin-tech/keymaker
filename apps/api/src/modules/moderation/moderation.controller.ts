@@ -29,8 +29,9 @@ export async function create(req: Request, res: Response): Promise<void> {
 export async function listByCommunity(req: Request, res: Response): Promise<void> {
   const { communityId } = req.params;
   const actions = await moderationService.listByCommunity(communityId);
+  type ActionItem = (Awaited<ReturnType<typeof moderationService.listByCommunity>>)[number];
   res.json({
-    actions: actions.map((a) => ({
+    actions: actions.map((a: ActionItem) => ({
       id: a.id,
       actionType: a.actionType,
       targetType: a.targetType,
@@ -47,8 +48,9 @@ export async function listByCommunity(req: Request, res: Response): Promise<void
 export async function listByTarget(req: Request, res: Response): Promise<void> {
   const { targetType, targetId } = req.params;
   const actions = await moderationService.listByTarget(targetType, targetId);
+  type ActionItem = (Awaited<ReturnType<typeof moderationService.listByTarget>>)[number];
   res.json({
-    actions: actions.map((a) => ({
+    actions: actions.map((a: ActionItem) => ({
       id: a.id,
       actionType: a.actionType,
       targetType: a.targetType,

@@ -12,8 +12,9 @@ export async function getFeed(req: Request, res: Response): Promise<void> {
     return;
   }
 
+  type PostItem = NonNullable<Awaited<ReturnType<typeof rankingService.getFeed>>>[number];
   res.json({
-    posts: posts.map((post) => ({
+    posts: posts.map((post: PostItem) => ({
       id: post.id,
       title: post.title,
       body: post.body,
