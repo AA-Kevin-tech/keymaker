@@ -10,6 +10,12 @@ A Reddit-style platform with **four-axis evaluation** (clarity, evidence, kindne
 - **DB**: PostgreSQL
 - **Deploy**: Dockerfile at repo root for container deployment
 
+## Documentation
+
+- [DEPLOY.md](DEPLOY.md) – Docker build/run, env, and production deployment
+- [docs/API.md](docs/API.md) – API endpoints, auth, and request/response overview
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) – Monorepo layout, data flow, and module structure
+
 ## Local development
 
 ### Prerequisites
