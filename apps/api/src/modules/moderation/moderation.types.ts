@@ -4,5 +4,6 @@ export interface CreateModerationActionBody {
   targetId: string;
   moderatorId: string;
   communityId?: string | null;
+  reasonCode?: string | null;
   reason?: string | null;
 }

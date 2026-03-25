@@ -18,6 +18,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       targetId: action.targetId,
       moderatorId: action.moderatorId,
       communityId: action.communityId,
+      reasonCode: action.reasonCode,
       reason: action.reason,
       createdAt: action.createdAt.toISOString(),
     });
@@ -39,6 +40,7 @@ export async function listByCommunity(req: Request, res: Response): Promise<void
       moderatorId: a.moderatorId,
       moderator: a.moderator,
       communityId: a.communityId,
+      reasonCode: a.reasonCode,
       reason: a.reason,
       createdAt: a.createdAt.toISOString(),
     })),
@@ -58,6 +60,7 @@ export async function listByTarget(req: Request, res: Response): Promise<void> {
       moderatorId: a.moderatorId,
       moderator: a.moderator,
       communityId: a.communityId,
+      reasonCode: a.reasonCode,
       reason: a.reason,
       createdAt: a.createdAt.toISOString(),
     })),

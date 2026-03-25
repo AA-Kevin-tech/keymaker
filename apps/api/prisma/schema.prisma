@@ -7,6 +7,34 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ReportStatus {
+  open
+  dismissed
+  actioned
+}
+
+enum AppealStatus {
+  open
+  upheld
+  reversed
+  modified
+  closed
+}
+
+enum UserRestrictionType {
+  posting_block
+  rating_block
+  temp_suspend
+  permanent_ban
+}
+
+enum ModeratorRoleName {
+  super_admin
+  platform_moderator
+  community_admin
+  community_moderator
+}
+
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
@@ -23,8 +51,17 @@ model User {
   posts             Post[]
   comments          Comment[]
   ratings           Rating[]
-  moderationActions ModerationAction[]
-  emailVerificationToken EmailVerificationToken?
+  moderationActions              ModerationAction[]
+  emailVerificationToken       EmailVerificationToken?
+  reportsFiled                 Report[]             @relation("ReportReporter")
+  reportsReviewed              Report[]             @relation("ReportReviewedBy")
+  restrictionsSubject          UserRestriction[]    @relation("RestrictionSubject")
+  restrictionsCreated          UserRestriction[]    @relation("RestrictionCreatedBy")
+  appealsFiled                 Appeal[]             @relation("AppealAppellant")
+  appealsReviewed              Appeal[]             @relation("AppealReviewedBy")
+  moderatorNotesAbout          ModeratorNote[]      @relation("ModeratorNoteSubject")
+  moderatorNotesAuthored       ModeratorNote[]      @relation("ModeratorNoteAuthor")
+  moderatorRoles               ModeratorRole[]
 
   @@map("users")
 }
@@ -51,8 +88,11 @@ model Community {
   weightNovelty        Float    @default(1)
   decayHalfLifeSeconds Int      @default(86400)
 
-  posts              Post[]
+  posts               Post[]
   moderationActions   ModerationAction[]
+  userRestrictions    UserRestriction[]
+  moderatorNotes      ModeratorNote[]
+  moderatorRoles      ModeratorRole[]
 
   @@map("communities")
 }
@@ -135,12 +175,115 @@ model ModerationAction {
   targetId    String   @map("target_id")
   moderatorId String   @map("moderator_id")
   communityId String?  @map("community_id")
+  reasonCode  String?  @map("reason_code")
   reason      String?  @db.Text
   createdAt   DateTime @default(now())
 
-  moderator User      @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
+  moderator User       @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
   community Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+  appeals   Appeal[]
 
   @@index([communityId])
   @@map("moderation_actions")
+}
+
+model Report {
+  id           String       @id @default(cuid())
+  reporterId   String       @map("reporter_id")
+  targetType   String       @map("target_type")
+  targetId     String       @map("target_id")
+  reasonCode   String       @map("reason_code")
+  reasonText   String?      @map("reason_text") @db.Text
+  status       ReportStatus @default(open)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  reviewedById String?      @map("reviewed_by")
+  reviewedAt   DateTime?    @map("reviewed_at")
+
+  reporter   User  @relation("ReportReporter", fields: [reporterId], references: [id], onDelete: Cascade)
+  reviewedBy User? @relation("ReportReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([targetType, targetId])
+  @@index([reporterId])
+  @@map("reports")
+}
+
+model UserRestriction {
+  id              String              @id @default(cuid())
+  userId          String              @map("user_id")
+  restrictionType UserRestrictionType @map("restriction_type")
+  communityId     String?             @map("community_id")
+  reasonCode      String?             @map("reason_code")
+  reasonText      String?             @map("reason_text") @db.Text
+  startsAt        DateTime            @map("starts_at")
+  endsAt          DateTime?           @map("ends_at")
+  createdById     String              @map("created_by")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  isActive        Boolean             @default(true) @map("is_active")
+
+  user      User       @relation("RestrictionSubject", fields: [userId], references: [id], onDelete: Cascade)
+  community Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy User       @relation("RestrictionCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+
+  @@index([userId, isActive])
+  @@index([communityId])
+  @@index([endsAt])
+  @@map("user_restrictions")
+}
+
+model Appeal {
+  id                 String       @id @default(cuid())
+  moderationActionId String       @map("moderation_action_id")
+  appellantId        String       @map("appellant_id")
+  appealText         String       @map("appeal_text") @db.Text
+  status             AppealStatus @default(open)
+  reviewedById       String?      @map("reviewed_by")
+  reviewedAt         DateTime?    @map("reviewed_at")
+  decisionNote       String?      @map("decision_note") @db.Text
+  createdAt          DateTime     @default(now()) @map("created_at")
+
+  moderationAction ModerationAction @relation(fields: [moderationActionId], references: [id], onDelete: Restrict)
+  appellant        User             @relation("AppealAppellant", fields: [appellantId], references: [id], onDelete: Cascade)
+  reviewedBy       User?            @relation("AppealReviewedBy", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@index([moderationActionId])
+  @@index([appellantId])
+  @@index([createdAt])
+  @@map("appeals")
+}
+
+model ModeratorNote {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  moderatorId String   @map("moderator_id")
+  communityId String?  @map("community_id")
+  noteText    String   @map("note_text") @db.Text
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user      User       @relation("ModeratorNoteSubject", fields: [userId], references: [id], onDelete: Cascade)
+  moderator User       @relation("ModeratorNoteAuthor", fields: [moderatorId], references: [id], onDelete: Cascade)
+  community Community? @relation(fields: [communityId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([moderatorId])
+  @@index([communityId])
+  @@map("moderator_notes")
+}
+
+model ModeratorRole {
+  id          String            @id @default(cuid())
+  userId      String            @map("user_id")
+  communityId String?           @map("community_id")
+  roleName    ModeratorRoleName @map("role_name")
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  community Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([communityId])
+  @@index([roleName])
+  @@map("moderator_roles")
 }

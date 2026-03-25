@@ -9,6 +9,7 @@ export async function create(body: CreateModerationActionBody) {
       targetId: body.targetId,
       moderatorId: body.moderatorId,
       communityId: body.communityId ?? null,
+      reasonCode: body.reasonCode ?? null,
       reason: body.reason ?? null,
     },
   });

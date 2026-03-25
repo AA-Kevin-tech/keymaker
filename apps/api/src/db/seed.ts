@@ -2,6 +2,7 @@
  * Seed script: users, communities, posts, comments, and a few ratings.
  * Run: pnpm run seed (from repo root or apps/api)
  */
+import { ModeratorRoleName } from "@prisma/client";
 import { prisma } from "./prisma.js";
 import * as bcrypt from "bcryptjs";
 
@@ -21,6 +22,23 @@ async function main() {
       passwordHash: hash,
     },
   });
+
+  const existingAdminRole = await prisma.moderatorRole.findFirst({
+    where: {
+      userId: alice.id,
+      communityId: null,
+      roleName: ModeratorRoleName.super_admin,
+    },
+  });
+  if (!existingAdminRole) {
+    await prisma.moderatorRole.create({
+      data: {
+        userId: alice.id,
+        communityId: null,
+        roleName: ModeratorRoleName.super_admin,
+      },
+    });
+  }
 
   const bob = await prisma.user.upsert({
     where: { username: "bob" },
@@ -113,7 +131,7 @@ async function main() {
     },
   });
 
-  console.log("Seed complete: users, community, post, comment, ratings.");
+  console.log("Seed complete: users (alice = platform super_admin), community, post, comment, ratings.");
 }
 
 main()

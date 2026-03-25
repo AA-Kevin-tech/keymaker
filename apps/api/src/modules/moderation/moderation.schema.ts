@@ -5,6 +5,7 @@ export const createModerationActionSchema = z.object({
   targetType: z.string().min(1, "targetType is required").trim(),
   targetId: z.string().min(1, "targetId is required").trim(),
   communityId: z.string().trim().nullable().optional(),
+  reasonCode: z.string().trim().nullable().optional(),
   reason: z.string().trim().nullable().optional(),
 });
 
