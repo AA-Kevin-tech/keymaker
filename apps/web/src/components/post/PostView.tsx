@@ -22,19 +22,23 @@ export function PostView({ post, comments }: PostViewProps) {
   const token = getToken();
   const { user } = useCurrentUser();
   const router = useRouter();
-  const [hiding, setHiding] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const isAuthor = user?.id === post.authorId;
   const isHidden = !!post.deletedAt;
 
-  const handleHide = async () => {
-    if (!token || !isAuthor || hiding) return;
-    setHiding(true);
+  const handleDelete = async () => {
+    if (!token || !isAuthor || deleting) return;
+    const ok = window.confirm(
+      "Delete this post? It will be removed from the community. You can restore it on this page while you are logged in."
+    );
+    if (!ok) return;
+    setDeleting(true);
     try {
       await api.post(`/posts/${post.id}/hide`, {}, token);
       router.refresh();
     } finally {
-      setHiding(false);
+      setDeleting(false);
     }
   };
 
@@ -59,14 +63,15 @@ export function PostView({ post, comments }: PostViewProps) {
       </Link>
       {isHidden && (
         <div className="mb-4 rounded-lg border border-amber-600/40 bg-amber-500/10 p-3 text-sm text-amber-100">
-          This post is hidden. Only you can see it.
+          This post is deleted (hidden from the community). Only you can see it
+          here; restore it to show it in the feed again.
         </div>
       )}
       {isAuthor && (
         <div className="mb-2 flex gap-2">
           {!isHidden ? (
-            <Button variant="ghost" onClick={handleHide} disabled={hiding}>
-              {hiding ? "Hiding…" : "Hide post"}
+            <Button variant="ghost" onClick={handleDelete} disabled={deleting}>
+              {deleting ? "Deleting…" : "Delete post"}
             </Button>
           ) : (
             <Button variant="primary" onClick={handleRestore} disabled={restoring}>

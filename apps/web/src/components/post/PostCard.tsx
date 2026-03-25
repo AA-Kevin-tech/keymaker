@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { PostAxisRail } from "./PostAxisRail";
+import { PostDeleteButton } from "./PostDeleteButton";
 import { formatDate } from "@/lib/utils";
 import type { Post } from "@/lib/types";
 
@@ -57,6 +58,7 @@ export function PostCard({ post }: PostCardProps) {
               <span>{post.ratingCount} ratings</span>
             </>
           )}
+          <PostDeleteButton postId={post.id} authorId={post.authorId} />
         </div>
       </div>
     </article>
