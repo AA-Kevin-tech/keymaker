@@ -1,7 +1,18 @@
-const API_BASE =
-  typeof window !== "undefined"
-    ? (process.env.NEXT_PUBLIC_API_URL || "/api").replace(/\/$/, "")
-    : process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001/api";
+/**
+ * Browser: uses NEXT_PUBLIC_API_URL or same-origin `/api`.
+ * Server (RSC / SSR): prefers API_URL (runtime, not bundled) then NEXT_PUBLIC_API_URL,
+ * so deploys can point SSR at the real API without relying on build-only inlining.
+ */
+function getApiBase(): string {
+  if (typeof window !== "undefined") {
+    return (process.env.NEXT_PUBLIC_API_URL || "/api").replace(/\/$/, "");
+  }
+  const base =
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://localhost:3001/api";
+  return base.replace(/\/$/, "");
+}
 
 async function request<T>(
   path: string,
@@ -15,7 +26,8 @@ async function request<T>(
   if (token) {
     (headers as Record<string, string>)["Authorization"] = `Bearer ${token}`;
   }
-  const res = await fetch(`${API_BASE}${path.startsWith("/") ? path : `/${path}`}`, {
+  const apiBase = getApiBase();
+  const res = await fetch(`${apiBase}${path.startsWith("/") ? path : `/${path}`}`, {
     ...init,
     headers,
   });

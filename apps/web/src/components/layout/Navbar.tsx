@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getToken, clearToken } from "@/lib/auth";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
@@ -9,9 +10,25 @@ const linkBase =
   "text-sm text-meta hover:text-ink transition-colors";
 const linkActive = "text-sm font-semibold text-link";
 
+function AuthNavSkeleton() {
+  return (
+    <div
+      className="flex items-center gap-5"
+      aria-hidden
+    >
+      <div className="h-4 w-16 rounded bg-subtle/60 animate-pulse" />
+      <div className="h-4 w-14 rounded bg-subtle/60 animate-pulse" />
+      <div className="h-4 w-16 rounded bg-subtle/60 animate-pulse" />
+    </div>
+  );
+}
+
 export function Navbar() {
   const pathname = usePathname();
-  const token = getToken();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const token = mounted ? getToken() : null;
   const { user } = useCurrentUser();
 
   return (
@@ -29,7 +46,9 @@ export function Navbar() {
           >
             Communities
           </Link>
-          {token ? (
+          {!mounted ? (
+            <AuthNavSkeleton />
+          ) : token ? (
             <>
               {user && (
                 <Link

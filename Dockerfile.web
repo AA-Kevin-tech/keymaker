@@ -21,6 +21,9 @@ RUN pnpm run build --filter web
 
 FROM base AS runner
 ENV NODE_ENV=production
+# Optional runtime override for Next.js server-side fetch; Railway can set API_URL on the service.
+ARG API_URL=
+ENV API_URL=${API_URL}
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/apps/web ./apps/web
 COPY --from=builder /app/packages/shared ./packages/shared

@@ -1,12 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
-
-export const dynamic = "force-dynamic";
 import { CommunityAboutCard } from "@/components/community/CommunityAboutCard";
 import { CommunityHeader } from "@/components/community/CommunityHeader";
 import { PostCard } from "@/components/post/PostCard";
 import type { Community, Post } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
 
 interface Params {
   id: string;
@@ -15,7 +15,8 @@ interface Params {
 async function getCommunity(slug: string): Promise<Community | null> {
   try {
     return await api.get<Community>(`/communities/${slug}`);
-  } catch {
+  } catch (err) {
+    console.error(`[web] getCommunity failed for slug=${slug}`, err);
     return null;
   }
 }
@@ -24,7 +25,11 @@ async function getFeed(slug: string): Promise<Post[]> {
   try {
     const res = await api.get<{ posts: Post[] }>(`/communities/${slug}/feed`);
     return res.posts;
-  } catch {
+  } catch (err) {
+    console.error(
+      `[web] getFeed failed for slug=${slug} — check API_URL / NEXT_PUBLIC_API_URL match the API where posts are created`,
+      err
+    );
     return [];
   }
 }
