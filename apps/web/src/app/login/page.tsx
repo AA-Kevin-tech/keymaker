@@ -37,11 +37,11 @@ export default function LoginPage() {
 
   return (
     <div className="max-w-sm mx-auto py-8">
-      <h1 className="text-xl font-semibold mb-4">Log in</h1>
+      <h1 className="mb-4 text-xl font-semibold text-ink">Log in</h1>
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="username" className="mb-1 block text-sm font-medium text-ink">
               Username
             </label>
             <Input
@@ -54,7 +54,7 @@ export default function LoginPage() {
             />
           </div>
           <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="password" className="mb-1 block text-sm font-medium text-ink">
               Password
             </label>
             <Input
@@ -66,15 +66,15 @@ export default function LoginPage() {
               autoComplete="current-password"
             />
           </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && <p className="text-sm text-red-400">{error}</p>}
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Logging in…" : "Log in"}
           </Button>
         </form>
       </Card>
-      <p className="mt-4 text-center text-sm text-gray-500">
+      <p className="mt-4 text-center text-sm text-meta">
         Don’t have an account?{" "}
-        <Link href="/register" className="text-blue-600 hover:underline">
+        <Link href="/register" className="text-link hover:underline">
           Register
         </Link>
       </p>

@@ -39,8 +39,11 @@ export default function CreateCommunityPage() {
   if (!token) {
     return (
       <div className="py-8">
-        <p className="text-gray-500">
-          <Link href="/login" className="text-blue-600 hover:underline">Log in</Link> to create a community.
+        <p className="text-meta">
+          <Link href="/login" className="text-link hover:underline">
+            Log in
+          </Link>{" "}
+          to create a community.
         </p>
       </div>
     );
@@ -48,11 +51,11 @@ export default function CreateCommunityPage() {
 
   return (
     <div className="max-w-md mx-auto py-8">
-      <h1 className="text-xl font-semibold mb-4">Create community</h1>
+      <h1 className="mb-4 text-xl font-semibold text-ink">Create community</h1>
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="name" className="mb-1 block text-sm font-medium text-ink">
               Name
             </label>
             <Input
@@ -64,7 +67,7 @@ export default function CreateCommunityPage() {
             />
           </div>
           <div>
-            <label htmlFor="slug" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="slug" className="mb-1 block text-sm font-medium text-ink">
               Slug (URL-friendly)
             </label>
             <Input
@@ -75,7 +78,7 @@ export default function CreateCommunityPage() {
               placeholder="general"
             />
           </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && <p className="text-sm text-red-400">{error}</p>}
           <Button type="submit" disabled={loading}>
             {loading ? "Creating…" : "Create community"}
           </Button>

@@ -6,9 +6,11 @@ interface CommunityHeaderProps {
 
 export function CommunityHeader({ community }: CommunityHeaderProps) {
   return (
-    <header className="mb-4">
-      <h1 className="text-2xl font-semibold text-gray-900">{community.name}</h1>
-      <p className="text-sm text-meta">/{community.slug}</p>
+    <header className="mb-2">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink">
+        {community.name}
+      </h1>
+      <p className="text-sm text-accentCommunity">/{community.slug}</p>
     </header>
   );
 }

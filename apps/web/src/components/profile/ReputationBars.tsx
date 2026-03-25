@@ -21,16 +21,16 @@ function barWidth(value: number): string {
 export function ReputationBars({ user }: ReputationBarsProps) {
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-medium text-gray-700">Reputation (four axes)</h2>
+      <h2 className="text-sm font-medium text-ink">Reputation (four axes)</h2>
       {AXES.map(({ key, label }) => (
         <div key={key}>
-          <div className="flex justify-between text-sm mb-0.5">
-            <span className="text-gray-600">{label}</span>
-            <span className="font-medium">{user[key].toFixed(2)}</span>
+          <div className="mb-0.5 flex justify-between text-sm">
+            <span className="text-meta">{label}</span>
+            <span className="font-medium text-prose">{user[key].toFixed(2)}</span>
           </div>
-          <div className="h-2 bg-gray-200 rounded overflow-hidden">
+          <div className="h-2 overflow-hidden rounded bg-subtle">
             <div
-              className="h-full bg-blue-600 rounded"
+              className="h-full rounded bg-link"
               style={{ width: barWidth(user[key]) }}
             />
           </div>

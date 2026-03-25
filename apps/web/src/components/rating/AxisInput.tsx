@@ -12,7 +12,7 @@ interface AxisInputProps {
 export function AxisInput({ label, value, onChange, disabled }: AxisInputProps) {
   return (
     <div className="flex items-center gap-2">
-      <label className="w-24 text-sm font-medium text-gray-700">{label}</label>
+      <label className="w-24 text-sm font-medium text-meta">{label}</label>
       <div className="flex gap-1">
         {[SCORE_MIN, -1, 0, 1, SCORE_MAX].map((n) => (
           <button
@@ -20,11 +20,11 @@ export function AxisInput({ label, value, onChange, disabled }: AxisInputProps) 
             type="button"
             disabled={disabled}
             onClick={() => onChange(n)}
-            className={`w-8 h-8 rounded text-sm font-medium border ${
+            className={`h-8 w-8 rounded-md border text-sm font-medium ${
               value === n
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white border-gray-300 hover:bg-gray-50"
-            } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
+                ? "border-blue-500 bg-blue-600 text-white"
+                : "border-subtle bg-elevated text-prose hover:bg-rowHover"
+            } ${disabled ? "cursor-not-allowed opacity-50" : ""}`}
           >
             {n > 0 ? `+${n}` : n}
           </button>

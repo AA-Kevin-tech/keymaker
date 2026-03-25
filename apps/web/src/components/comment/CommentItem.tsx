@@ -37,12 +37,12 @@ export function CommentItem({
 
   return (
     <div className="border-b border-subtle py-3 last:border-0">
-      <p className="text-[15px] leading-snug text-gray-800">{comment.body}</p>
+      <p className="text-[15px] leading-snug text-prose">{comment.body}</p>
       <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-meta">
         {comment.author && (
           <Link
             href={`/users/${comment.author.username}`}
-            className="hover:text-link hover:underline"
+            className="font-medium text-accentUser hover:underline"
           >
             {comment.author.username}
           </Link>

@@ -6,8 +6,8 @@ import { getToken, clearToken } from "@/lib/auth";
 import { useCurrentUser } from "@/lib/useCurrentUser";
 
 const linkBase =
-  "text-sm text-meta hover:text-gray-900 transition-colors";
-const linkActive = "text-sm font-medium text-link";
+  "text-sm text-meta hover:text-ink transition-colors";
+const linkActive = "text-sm font-semibold text-link";
 
 export function Navbar() {
   const pathname = usePathname();
@@ -15,12 +15,12 @@ export function Navbar() {
   const { user } = useCurrentUser();
 
   return (
-    <nav className="sticky top-0 z-20 h-12 border-b border-subtle bg-elevated">
-      <div className="flex h-full items-center justify-between max-w-6xl mx-auto px-4">
-        <Link href="/" className="font-semibold text-base text-gray-900">
+    <nav className="sticky top-0 z-20 h-14 border-b border-subtle bg-canvas/95 backdrop-blur-sm">
+      <div className="mx-auto flex h-full max-w-6xl items-center justify-between px-4">
+        <Link href="/" className="text-base font-semibold text-ink">
           Keymaker
         </Link>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
           <Link
             href="/communities"
             className={
@@ -34,7 +34,7 @@ export function Navbar() {
               {user && (
                 <Link
                   href={`/users/${user.username}`}
-                  className={linkBase}
+                  className="text-sm font-medium text-accentUser transition-colors hover:underline"
                 >
                   {user.username}
                 </Link>

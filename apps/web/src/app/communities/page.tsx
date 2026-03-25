@@ -22,18 +22,21 @@ export default async function CommunitiesPage() {
   return (
     <main className="py-6">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-semibold">Communities</h1>
+        <h1 className="text-2xl font-semibold text-ink">Communities</h1>
         <Link
           href="/communities/create"
-          className="text-blue-600 hover:underline font-medium text-sm"
+          className="text-sm font-medium text-link hover:underline"
         >
           Create community
         </Link>
       </div>
       {communities.length === 0 ? (
-        <Card className="p-6 text-center text-gray-500">
+        <Card className="p-6 text-center text-meta">
           <p>No communities yet.</p>
-          <Link href="/communities/create" className="text-blue-600 hover:underline mt-2 inline-block">
+          <Link
+            href="/communities/create"
+            className="mt-2 inline-block text-link hover:underline"
+          >
             Create the first one
           </Link>
         </Card>

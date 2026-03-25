@@ -6,7 +6,7 @@ export function Textarea({
 }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return (
     <textarea
-      className={`w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 min-h-[100px] ${className}`}
+      className={`min-h-[100px] w-full rounded-md border border-subtle bg-canvas px-3 py-2 text-ink placeholder:text-meta focus:border-link focus:outline-none focus:ring-2 focus:ring-link/40 ${className}`}
       {...props}
     />
   );

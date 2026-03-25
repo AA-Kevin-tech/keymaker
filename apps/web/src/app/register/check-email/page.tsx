@@ -32,20 +32,23 @@ function CheckEmailInner() {
 
   return (
     <div className="max-w-sm mx-auto py-8">
-      <h1 className="text-xl font-semibold mb-4">Check your email</h1>
-      <Card className="p-6 space-y-4">
-        <p className="text-gray-700 text-sm">
-          We sent a verification link to <strong>{initialEmail || email || "your address"}</strong>. Open it to
-          activate your account, then log in.
+      <h1 className="mb-4 text-xl font-semibold text-ink">Check your email</h1>
+      <Card className="space-y-4 p-6">
+        <p className="text-sm text-prose">
+          We sent a verification link to{" "}
+          <strong className="text-ink">
+            {initialEmail || email || "your address"}
+          </strong>
+          . Open it to activate your account, then log in.
         </p>
         {sent && (
-          <p className="text-green-700 text-sm">
+          <p className="text-sm text-emerald-400">
             If an account exists for that email and is not verified, we sent a new link.
           </p>
         )}
         <form onSubmit={handleResend} className="space-y-3">
           <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="email" className="mb-1 block text-sm font-medium text-ink">
               Email
             </label>
             <Input
@@ -57,13 +60,13 @@ function CheckEmailInner() {
               autoComplete="email"
             />
           </div>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+          {error && <p className="text-sm text-red-400">{error}</p>}
           <Button type="submit" disabled={loading} className="w-full">
             {loading ? "Sending…" : "Resend verification email"}
           </Button>
         </form>
         <p className="text-center text-sm">
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/login" className="text-link hover:underline">
             Back to log in
           </Link>
         </p>
@@ -77,7 +80,7 @@ export default function CheckEmailPage() {
     <Suspense
       fallback={
         <div className="max-w-sm mx-auto py-8">
-          <p className="text-gray-600">Loading…</p>
+          <p className="text-meta">Loading…</p>
         </div>
       }
     >

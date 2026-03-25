@@ -17,8 +17,12 @@ export default function CommunitiesError({
 
   return (
     <div className="py-12 px-4 text-center">
-      <h2 className="text-lg font-semibold text-gray-900 mb-2">Could not load communities</h2>
-      <p className="text-gray-600 text-sm mb-6">{error.message || "Please check your connection and try again."}</p>
+      <h2 className="mb-2 text-lg font-semibold text-ink">
+        Could not load communities
+      </h2>
+      <p className="mb-6 text-sm text-meta">
+        {error.message || "Please check your connection and try again."}
+      </p>
       <div className="flex gap-3 justify-center">
         <Button onClick={reset}>Try again</Button>
         <Link href="/">

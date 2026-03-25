@@ -27,12 +27,12 @@ export default async function CommunitySettingsPage({ params }: { params: Params
     <main className="py-6 max-w-lg">
       <Link
         href={`/communities/${slug}`}
-        className="text-blue-600 hover:underline text-sm font-medium mb-4 inline-block"
+        className="mb-4 inline-block text-sm font-medium text-link hover:underline"
       >
         ← Back to {community.name}
       </Link>
-      <h1 className="text-xl font-semibold text-gray-900 mb-2">Community settings</h1>
-      <p className="text-gray-500 text-sm mb-6">
+      <h1 className="mb-2 text-xl font-semibold text-ink">Community settings</h1>
+      <p className="mb-6 text-sm text-meta">
         Weights and time decay affect how posts are ranked in the feed. See README for the formula.
       </p>
       <CommunitySettingsForm community={community} slug={slug} />

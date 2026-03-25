@@ -8,7 +8,7 @@ export function CommunityAboutCard({ community }: { community: Community }) {
       <h2 className="text-xs font-semibold uppercase tracking-wide text-meta">
         About community
       </h2>
-      <p className="mt-2 font-medium text-gray-900">{community.name}</p>
+      <p className="mt-2 font-medium text-ink">{community.name}</p>
       <p className="text-sm text-meta">/{community.slug}</p>
       <div className="mt-4 flex flex-col gap-2 border-t border-subtle pt-4 text-sm">
         <Link
@@ -19,7 +19,7 @@ export function CommunityAboutCard({ community }: { community: Community }) {
         </Link>
         <Link
           href={`/communities/${community.slug}/settings`}
-          className="text-meta hover:text-gray-900 hover:underline"
+          className="text-meta hover:text-ink hover:underline"
         >
           Community settings
         </Link>

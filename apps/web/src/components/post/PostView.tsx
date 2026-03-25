@@ -58,7 +58,7 @@ export function PostView({ post, comments }: PostViewProps) {
         ← Back to community
       </Link>
       {isHidden && (
-        <div className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded text-amber-800 text-sm">
+        <div className="mb-4 rounded-lg border border-amber-600/40 bg-amber-500/10 p-3 text-sm text-amber-100">
           This post is hidden. Only you can see it.
         </div>
       )}
@@ -76,8 +76,8 @@ export function PostView({ post, comments }: PostViewProps) {
         </div>
       )}
       <PostDetail post={post} />
-      <section className="mt-6 rounded-md border border-subtle bg-elevated p-4 sm:p-5">
-        <h2 className="mb-3 text-lg font-medium text-gray-900">Rate this post</h2>
+      <section className="mt-6 rounded-lg border border-subtle bg-elevated p-4 sm:p-5">
+        <h2 className="mb-3 text-lg font-medium text-ink">Rate this post</h2>
         <RatingWidget
           targetType="post"
           targetId={post.id}
@@ -97,8 +97,8 @@ export function PostView({ post, comments }: PostViewProps) {
           }}
         />
       </section>
-      <section className="mt-8 rounded-md border border-subtle bg-elevated p-4 sm:p-5">
-        <h2 className="mb-3 text-lg font-medium text-gray-900">Comments</h2>
+      <section className="mt-8 rounded-lg border border-subtle bg-elevated p-4 sm:p-5">
+        <h2 className="mb-3 text-lg font-medium text-ink">Comments</h2>
         <CommentComposer
           postId={post.id}
           authorId=""

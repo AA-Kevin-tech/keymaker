@@ -12,11 +12,12 @@ export function Button({
   ...props
 }: ButtonProps) {
   const base =
-    "px-4 py-2 rounded font-medium transition disabled:opacity-50 disabled:cursor-not-allowed";
+    "rounded-lg px-4 py-2 font-medium transition disabled:cursor-not-allowed disabled:opacity-50";
   const variants = {
-    primary: "bg-blue-600 text-white hover:bg-blue-700",
-    secondary: "bg-gray-200 text-gray-900 hover:bg-gray-300",
-    ghost: "text-gray-700 hover:bg-gray-100",
+    primary: "bg-blue-600 text-white hover:bg-blue-500",
+    secondary:
+      "bg-control text-ink hover:bg-subtle border border-subtle",
+    ghost: "text-meta hover:bg-rowHover hover:text-ink",
   };
   return (
     <button

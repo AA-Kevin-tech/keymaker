@@ -24,8 +24,8 @@ export function PostComposer({
 
   if (!token) {
     return (
-      <p className="text-gray-500 text-sm">
-        <a href="/login" className="text-blue-600 hover:underline">
+      <p className="text-sm text-meta">
+        <a href="/login" className="text-link hover:underline">
           Log in
         </a>{" "}
         to create a post.
@@ -58,7 +58,7 @@ export function PostComposer({
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="title" className="mb-1 block text-sm font-medium text-ink">
           Title
         </label>
         <Input
@@ -71,7 +71,7 @@ export function PostComposer({
         />
       </div>
       <div>
-        <label htmlFor="body" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="body" className="mb-1 block text-sm font-medium text-ink">
           Body (optional)
         </label>
         <Textarea
@@ -81,7 +81,7 @@ export function PostComposer({
           placeholder="Write your post..."
         />
       </div>
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
       <Button type="submit" disabled={loading}>
         {loading ? "Creating…" : "Create post"}
       </Button>

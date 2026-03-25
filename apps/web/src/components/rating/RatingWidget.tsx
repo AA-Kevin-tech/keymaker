@@ -38,8 +38,11 @@ export function RatingWidget({
 
   if (!token) {
     return (
-      <p className="text-gray-500 text-sm">
-        <a href="/login" className="text-blue-600 hover:underline">Log in</a> to rate.
+      <p className="text-sm text-meta">
+        <a href="/login" className="text-link hover:underline">
+          Log in
+        </a>{" "}
+        to rate.
       </p>
     );
   }
@@ -59,8 +62,13 @@ export function RatingWidget({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3 p-3 border border-gray-200 rounded-lg bg-gray-50">
-      <p className="text-sm font-medium text-gray-700">Rate this {targetType}</p>
+    <form
+      onSubmit={handleSubmit}
+      className="space-y-3 rounded-lg border border-subtle bg-canvas p-3"
+    >
+      <p className="text-sm font-medium text-ink">
+        Rate this {targetType}
+      </p>
       {AXES.map(({ key, label }) => (
         <AxisInput
           key={key}
@@ -83,7 +91,7 @@ export function RatingWidget({
           disabled={loading}
         />
       ))}
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-sm text-red-400">{error}</p>}
       <Button type="submit" disabled={loading}>
         {loading ? "Submitting…" : "Submit rating"}
       </Button>

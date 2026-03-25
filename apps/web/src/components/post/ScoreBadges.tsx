@@ -20,7 +20,7 @@ export function ScoreBadges({ post }: ScoreBadgesProps) {
       {AXES.map(({ key, label }) => (
         <span
           key={key}
-          className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-canvas text-gray-700"
+          className="inline-flex items-center rounded-md border border-subtle bg-canvas px-2 py-0.5 text-xs font-medium text-prose"
         >
           {label}: {post[key].toFixed(1)}
         </span>

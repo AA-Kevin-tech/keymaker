@@ -71,8 +71,8 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
 
   if (!token) {
     return (
-      <p className="text-gray-500">
-        <Link href="/login" className="text-blue-600 hover:underline">
+      <p className="text-meta">
+        <Link href="/login" className="text-link hover:underline">
           Log in
         </Link>{" "}
         to edit community settings.
@@ -85,7 +85,7 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label htmlFor="weightClarity" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="weightClarity" className="mb-1 block text-sm font-medium text-ink">
               Weight: Clarity
             </label>
             <Input
@@ -98,7 +98,7 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
             />
           </div>
           <div>
-            <label htmlFor="weightEvidence" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="weightEvidence" className="mb-1 block text-sm font-medium text-ink">
               Weight: Evidence
             </label>
             <Input
@@ -111,7 +111,7 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
             />
           </div>
           <div>
-            <label htmlFor="weightKindness" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="weightKindness" className="mb-1 block text-sm font-medium text-ink">
               Weight: Kindness
             </label>
             <Input
@@ -124,7 +124,7 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
             />
           </div>
           <div>
-            <label htmlFor="weightNovelty" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="weightNovelty" className="mb-1 block text-sm font-medium text-ink">
               Weight: Novelty
             </label>
             <Input
@@ -138,7 +138,7 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
           </div>
         </div>
         <div>
-          <label htmlFor="decayHalfLifeSeconds" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="decayHalfLifeSeconds" className="mb-1 block text-sm font-medium text-ink">
             Decay half-life (seconds)
           </label>
           <Input
@@ -149,9 +149,11 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
             value={decayHalfLifeSeconds}
             onChange={(e) => setDecayHalfLifeSeconds(e.target.value)}
           />
-          <p className="text-gray-500 text-xs mt-1">e.g. 86400 = 24 hours. Newer posts rank higher over time.</p>
+          <p className="mt-1 text-xs text-meta">
+            e.g. 86400 = 24 hours. Newer posts rank higher over time.
+          </p>
         </div>
-        {error && <p className="text-red-600 text-sm">{error}</p>}
+        {error && <p className="text-sm text-red-400">{error}</p>}
         <Button type="submit" disabled={loading}>
           {loading ? "Saving…" : "Save settings"}
         </Button>

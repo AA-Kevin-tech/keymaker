@@ -9,11 +9,17 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: "#f3f4f6",
-        elevated: "#ffffff",
-        subtle: "#e5e7eb",
-        meta: "#6b7280",
-        link: "#2563eb",
+        canvas: "#121212",
+        elevated: "#1a1a1a",
+        rowHover: "#202020",
+        subtle: "#2a2a2a",
+        ink: "#ffffff",
+        prose: "#e4e4e7",
+        meta: "#a0a0a0",
+        link: "#6ea8fe",
+        accentUser: "#79c0ff",
+        accentCommunity: "#7ee2c5",
+        control: "#333333",
       },
     },
   },

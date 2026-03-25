@@ -17,8 +17,8 @@ export default function Error({
 
   return (
     <div className="min-h-[40vh] flex flex-col items-center justify-center px-4">
-      <h2 className="text-lg font-semibold text-gray-900 mb-2">Something went wrong</h2>
-      <p className="text-gray-600 text-sm text-center max-w-md mb-6">
+      <h2 className="mb-2 text-lg font-semibold text-ink">Something went wrong</h2>
+      <p className="mb-6 max-w-md text-center text-sm text-meta">
         {error.message || "An unexpected error occurred. Please try again."}
       </p>
       <div className="flex gap-3">

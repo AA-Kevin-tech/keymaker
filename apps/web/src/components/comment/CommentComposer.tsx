@@ -23,8 +23,8 @@ export function CommentComposer({
 
   if (!token) {
     return (
-      <p className="text-gray-500 text-sm py-2">
-        <a href="/login" className="text-blue-600 hover:underline">
+      <p className="py-2 text-sm text-meta">
+        <a href="/login" className="text-link hover:underline">
           Log in
         </a>{" "}
         to comment.
@@ -55,7 +55,7 @@ export function CommentComposer({
         required
         placeholder="Write a comment..."
       />
-      {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
+      {error && <p className="mt-1 text-sm text-red-400">{error}</p>}
       <Button type="submit" disabled={loading} className="mt-2">
         {loading ? "Posting…" : "Post comment"}
       </Button>

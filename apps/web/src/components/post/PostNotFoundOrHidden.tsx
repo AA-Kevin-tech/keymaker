@@ -47,7 +47,7 @@ export function PostNotFoundOrHidden({ postId }: PostNotFoundOrHiddenProps) {
   if (loading) {
     return (
       <main className="py-6">
-        <p className="text-gray-500">Loading…</p>
+        <p className="text-meta">Loading…</p>
       </main>
     );
   }
@@ -58,8 +58,8 @@ export function PostNotFoundOrHidden({ postId }: PostNotFoundOrHiddenProps) {
 
   return (
     <main className="py-6">
-      <p className="text-gray-700">Post not found.</p>
-      <Link href="/" className="text-blue-600 hover:underline mt-2 inline-block">
+      <p className="text-prose">Post not found.</p>
+      <Link href="/" className="mt-2 inline-block text-link hover:underline">
         ← Back home
       </Link>
     </main>

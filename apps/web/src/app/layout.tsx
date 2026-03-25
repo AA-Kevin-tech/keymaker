@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { Navbar } from "@/components/layout/Navbar";
 import { PageShell } from "@/components/layout/PageShell";
 import "@/styles/globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Keymaker",
@@ -15,7 +18,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className="min-h-screen bg-canvas text-gray-900">
+      <body
+        className={`${inter.className} min-h-screen bg-canvas text-prose antialiased`}
+      >
         <Navbar />
         <PageShell>{children}</PageShell>
       </body>

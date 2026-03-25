@@ -32,24 +32,24 @@ function VerifyEmailInner() {
 
   return (
     <div className="max-w-sm mx-auto py-8">
-      <h1 className="text-xl font-semibold mb-4">Email verification</h1>
+      <h1 className="mb-4 text-xl font-semibold text-ink">Email verification</h1>
       <Card className="p-6">
-        {status === "loading" && <p className="text-gray-600">Verifying…</p>}
+        {status === "loading" && <p className="text-meta">Verifying…</p>}
         {status === "ok" && (
           <div className="space-y-4">
-            <p className="text-gray-800">{message}</p>
-            <Link href="/login" className="text-blue-600 hover:underline font-medium">
+            <p className="text-prose">{message}</p>
+            <Link href="/login" className="font-medium text-link hover:underline">
               Log in
             </Link>
           </div>
         )}
         {status === "err" && (
           <div className="space-y-4">
-            <p className="text-red-600 text-sm">{message}</p>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-red-400">{message}</p>
+            <p className="text-sm text-meta">
               You can request a new link from the registration confirmation page.
             </p>
-            <Link href="/register/check-email" className="text-blue-600 hover:underline">
+            <Link href="/register/check-email" className="text-link hover:underline">
               Resend verification email
             </Link>
           </div>
@@ -64,7 +64,7 @@ export default function VerifyEmailPage() {
     <Suspense
       fallback={
         <div className="max-w-sm mx-auto py-8">
-          <p className="text-gray-600">Loading…</p>
+          <p className="text-meta">Loading…</p>
         </div>
       }
     >
