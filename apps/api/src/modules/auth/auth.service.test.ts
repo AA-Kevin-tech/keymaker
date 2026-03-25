@@ -5,9 +5,11 @@ import * as authService from "./auth.service.js";
 describe("auth.service", () => {
   const unique = `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const email = `${unique}@example.com`;
+  /** Only usernames this file may create; avoid `startsWith("user-")` — it races with other tests (e.g. ratings-and-feed). */
+  const usernamesToDelete = [unique, `${unique}-u2`] as const;
 
   afterAll(async () => {
-    await prisma.user.deleteMany({ where: { username: { startsWith: "user-" } } });
+    await prisma.user.deleteMany({ where: { username: { in: [...usernamesToDelete] } } });
     await prisma.$disconnect();
   });
 
