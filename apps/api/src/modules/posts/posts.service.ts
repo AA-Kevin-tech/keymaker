@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 import type { CreatePostBody, UpdatePostBody } from "./posts.types.js";
 
@@ -40,11 +41,33 @@ export async function softDelete(id: string) {
   });
 }
 
+export async function softDeleteTx(
+  tx: Prisma.TransactionClient,
+  id: string
+): Promise<{ id: string; communityId: string; deletedAt: Date | null }> {
+  return tx.post.update({
+    where: { id },
+    data: { deletedAt: new Date() },
+    select: { id: true, communityId: true, deletedAt: true },
+  });
+}
+
 export async function restore(id: string) {
   return prisma.post.update({
     where: { id },
     data: { deletedAt: null },
     include: { author: { select: { id: true, username: true } }, community: { select: { id: true, name: true, slug: true } } },
+  });
+}
+
+export async function restoreTx(
+  tx: Prisma.TransactionClient,
+  id: string
+): Promise<{ id: string; communityId: string; deletedAt: Date | null }> {
+  return tx.post.update({
+    where: { id },
+    data: { deletedAt: null },
+    select: { id: true, communityId: true, deletedAt: true },
   });
 }
 

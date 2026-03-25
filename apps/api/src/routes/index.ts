@@ -7,6 +7,7 @@ import { commentsRoutes } from "../modules/comments/comments.routes.js";
 import { ratingsRoutes } from "../modules/ratings/ratings.routes.js";
 import { moderationRoutes } from "../modules/moderation/moderation.routes.js";
 import { adminRoutes } from "../modules/admin/admin.routes.js";
+import { reportsRoutes } from "../modules/reports/reports.routes.js";
 
 export const apiRouter: IRouter = Router();
 
@@ -21,4 +22,5 @@ apiRouter.use("/posts", postsRoutes);
 apiRouter.use("/comments", commentsRoutes);
 apiRouter.use("/ratings", ratingsRoutes);
 apiRouter.use("/moderation", moderationRoutes);
+apiRouter.use("/reports", reportsRoutes);
 apiRouter.use("/admin", adminRoutes);
