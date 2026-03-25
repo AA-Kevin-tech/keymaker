@@ -23,61 +23,38 @@ export function PostView({ post, comments }: PostViewProps) {
   const { user } = useCurrentUser();
   const router = useRouter();
   const [deleting, setDeleting] = useState(false);
-  const [restoring, setRestoring] = useState(false);
   const isAuthor = user?.id === post.authorId;
-  const isHidden = !!post.deletedAt;
+  const communityPath = `/communities/${post.community?.slug ?? post.communityId}`;
 
   const handleDelete = async () => {
     if (!token || !isAuthor || deleting) return;
     const ok = window.confirm(
-      "Delete this post? It will be removed from the community. You can restore it on this page while you are logged in."
+      "Permanently delete this post? Comments and ratings on it will be removed. This cannot be undone."
     );
     if (!ok) return;
     setDeleting(true);
     try {
-      await api.post(`/posts/${post.id}/hide`, {}, token);
+      await api.delete(`/posts/${post.id}`, token);
+      router.push(communityPath);
       router.refresh();
     } finally {
       setDeleting(false);
     }
   };
 
-  const handleRestore = async () => {
-    if (!token || !isAuthor || restoring) return;
-    setRestoring(true);
-    try {
-      await api.post(`/posts/${post.id}/restore`, {}, token);
-      router.refresh();
-    } finally {
-      setRestoring(false);
-    }
-  };
-
   return (
     <main className="py-2 sm:py-4">
       <Link
-        href={`/communities/${post.community?.slug ?? post.communityId}`}
+        href={communityPath}
         className="mb-4 inline-block text-sm text-link hover:underline"
       >
         ← Back to community
       </Link>
-      {isHidden && (
-        <div className="mb-4 rounded-lg border border-amber-600/40 bg-amber-500/10 p-3 text-sm text-amber-100">
-          This post is deleted (hidden from the community). Only you can see it
-          here; restore it to show it in the feed again.
-        </div>
-      )}
       {isAuthor && (
         <div className="mb-2 flex gap-2">
-          {!isHidden ? (
-            <Button variant="ghost" onClick={handleDelete} disabled={deleting}>
-              {deleting ? "Deleting…" : "Delete post"}
-            </Button>
-          ) : (
-            <Button variant="primary" onClick={handleRestore} disabled={restoring}>
-              {restoring ? "Restoring…" : "Restore post"}
-            </Button>
-          )}
+          <Button variant="ghost" onClick={handleDelete} disabled={deleting}>
+            {deleting ? "Deleting…" : "Delete post"}
+          </Button>
         </div>
       )}
       <PostDetail post={post} />

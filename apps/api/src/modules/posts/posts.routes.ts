@@ -8,5 +8,6 @@ export const postsRoutes: IRouter = Router();
 postsRoutes.post("/", requireAuth, validateZod(createPostSchema), postsController.create);
 postsRoutes.get("/:id", postsController.getById);
 postsRoutes.patch("/:id", requireAuth, validateZod(updatePostSchema), postsController.update);
+postsRoutes.delete("/:id", requireAuth, postsController.permanentDelete);
 postsRoutes.post("/:id/hide", requireAuth, postsController.hide);
 postsRoutes.post("/:id/restore", requireAuth, postsController.restorePost);

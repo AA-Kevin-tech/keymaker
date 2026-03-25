@@ -54,6 +54,7 @@ Tokens are returned from **POST /api/auth/register** and **POST /api/auth/login*
 | POST | /api/posts | Yes | `{ "title", "body?", "communityId" }` | Create post. Title max 500 chars. |
 | GET | /api/posts/:id | No | — | Post by ID. |
 | PATCH | /api/posts/:id | Yes | `{ "title?", "body?" }` | Update post. |
+| DELETE | /api/posts/:id | Yes | — | Permanently delete post (author only). **204** on success. Removes comments (cascade), post/comment ratings, and moderation rows for this post and its comments. |
 | POST | /api/posts/:id/hide | Yes | — | Soft-hide post. |
 | POST | /api/posts/:id/restore | Yes | — | Restore hidden post. |
 

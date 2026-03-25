@@ -24,12 +24,12 @@ export function PostDeleteButton({ postId, authorId }: PostDeleteButtonProps) {
   const handleDelete = async () => {
     if (!token || deleting) return;
     const ok = window.confirm(
-      "Delete this post? It will be removed from the community. You can restore it from the post page if you still have the link."
+      "Permanently delete this post? Comments and ratings on it will be removed. This cannot be undone."
     );
     if (!ok) return;
     setDeleting(true);
     try {
-      await api.post(`/posts/${postId}/hide`, {}, token);
+      await api.delete(`/posts/${postId}`, token);
       router.refresh();
     } finally {
       setDeleting(false);

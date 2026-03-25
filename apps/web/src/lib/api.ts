@@ -35,7 +35,14 @@ async function request<T>(
     const err = await res.json().catch(() => ({ error: res.statusText }));
     throw new Error((err as { error?: string }).error || "Request failed");
   }
-  return res.json() as Promise<T>;
+  if (res.status === 204) {
+    return undefined as T;
+  }
+  const text = await res.text();
+  if (!text.trim()) {
+    return undefined as T;
+  }
+  return JSON.parse(text) as T;
 }
 
 export const api = {
@@ -50,4 +57,7 @@ export const api = {
 
   patch: <T>(path: string, body: unknown, token?: string) =>
     request<T>(path, { method: "PATCH", body: JSON.stringify(body), token }),
+
+  delete: <T = void>(path: string, token?: string) =>
+    request<T>(path, { method: "DELETE", token }),
 };

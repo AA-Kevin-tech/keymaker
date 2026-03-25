@@ -47,3 +47,29 @@ export async function restore(id: string) {
     include: { author: { select: { id: true, username: true } }, community: { select: { id: true, name: true, slug: true } } },
   });
 }
+
+/** Permanently remove post (author-only via controller). Comments cascade; ratings and moderation rows for the post and its comments are removed first. */
+export async function removePermanently(id: string) {
+  const commentIds = (
+    await prisma.comment.findMany({
+      where: { postId: id },
+      select: { id: true },
+    })
+  ).map((c) => c.id);
+
+  await prisma.$transaction([
+    prisma.rating.deleteMany({ where: { targetType: "post", targetId: id } }),
+    ...(commentIds.length > 0
+      ? [
+          prisma.rating.deleteMany({
+            where: { targetType: "comment", targetId: { in: commentIds } },
+          }),
+          prisma.moderationAction.deleteMany({
+            where: { targetType: "comment", targetId: { in: commentIds } },
+          }),
+        ]
+      : []),
+    prisma.moderationAction.deleteMany({ where: { targetType: "post", targetId: id } }),
+    prisma.post.delete({ where: { id } }),
+  ]);
+}

@@ -108,3 +108,21 @@ export async function restorePost(req: Request, res: Response): Promise<void> {
     res.status(404).json({ error: e instanceof Error ? e.message : "Restore failed" });
   }
 }
+
+export async function permanentDelete(req: Request, res: Response): Promise<void> {
+  if (!req.user) {
+    res.status(401).json({ error: "Authentication required" });
+    return;
+  }
+  try {
+    const existing = await postsService.getById(req.params.id, true);
+    if (!existing || existing.authorId !== req.user.id) {
+      res.status(403).json({ error: "Only the author can delete this post" });
+      return;
+    }
+    await postsService.removePermanently(req.params.id);
+    res.status(204).send();
+  } catch (e) {
+    res.status(404).json({ error: e instanceof Error ? e.message : "Delete failed" });
+  }
+}
