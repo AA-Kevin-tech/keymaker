@@ -4,6 +4,7 @@ import * as authService from "./auth.service.js";
 
 describe("auth.service", () => {
   const unique = `user-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+  const email = `${unique}@example.com`;
 
   afterAll(async () => {
     await prisma.user.deleteMany({ where: { username: { startsWith: "user-" } } });
@@ -13,8 +14,11 @@ describe("auth.service", () => {
   it("register creates user and returns token", async () => {
     const result = await authService.register({
       username: unique,
+      email,
       password: "password123",
     });
+    expect(result.kind).toBe("session");
+    if (result.kind !== "session") throw new Error("expected session");
     expect(result.id).toBeDefined();
     expect(result.username).toBe(unique);
     expect(result.token).toBeDefined();
@@ -23,8 +27,15 @@ describe("auth.service", () => {
 
   it("register throws for duplicate username", async () => {
     await expect(
-      authService.register({ username: unique, password: "other" })
+      authService.register({ username: unique, email: `${unique}-other@example.com`, password: "other" })
     ).rejects.toThrow("Username already taken");
+  });
+
+  it("register throws for duplicate email", async () => {
+    const u2 = `${unique}-u2`;
+    await expect(
+      authService.register({ username: u2, email, password: "password123" })
+    ).rejects.toThrow("Email already registered");
   });
 
   it("login returns token for valid credentials", async () => {

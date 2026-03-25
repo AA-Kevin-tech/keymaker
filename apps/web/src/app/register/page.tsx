@@ -9,9 +9,18 @@ import { Card } from "@/components/ui/Card";
 import { api } from "@/lib/api";
 import { setToken } from "@/lib/auth";
 
+type RegisterResponse =
+  | { token: string; user: { id: string; username: string; email: string } }
+  | {
+      pendingVerification: true;
+      message: string;
+      user: { id: string; username: string; email: string };
+    };
+
 export default function RegisterPage() {
   const router = useRouter();
   const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -21,13 +30,18 @@ export default function RegisterPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await api.post<{ token: string; user: { id: string; username: string } }>(
-        "/auth/register",
-        { username, password }
-      );
-      setToken(res.token);
-      router.push("/communities");
-      router.refresh();
+      const res = await api.post<RegisterResponse>("/auth/register", { username, email, password });
+      if ("token" in res && res.token) {
+        setToken(res.token);
+        router.push("/communities");
+        router.refresh();
+        return;
+      }
+      if ("pendingVerification" in res && res.pendingVerification) {
+        router.push(`/register/check-email?email=${encodeURIComponent(res.user.email)}`);
+        return;
+      }
+      setError("Unexpected response from server");
     } catch (e) {
       setError(e instanceof Error ? e.message : "Registration failed");
     } finally {
@@ -53,6 +67,19 @@ export default function RegisterPage() {
               minLength={2}
               maxLength={32}
               autoComplete="username"
+            />
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+              Email
+            </label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
             />
           </div>
           <div>

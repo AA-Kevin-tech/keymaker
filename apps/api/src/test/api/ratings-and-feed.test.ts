@@ -11,9 +11,10 @@ describe("API ratings and feed", () => {
   const slug = `feed-${Date.now()}`;
 
   beforeAll(async () => {
+    const u = `user-${Date.now()}`;
     const reg = await request(app)
       .post("/api/auth/register")
-      .send({ username: `user-${Date.now()}`, password: "password123" });
+      .send({ username: u, email: `${u}@example.com`, password: "password123" });
     token = reg.body.token;
     userId = reg.body.user.id;
 

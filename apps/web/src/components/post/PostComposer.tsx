@@ -33,6 +33,8 @@ export function PostComposer({
     );
   }
 
+  const bearerToken = token;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -41,7 +43,7 @@ export function PostComposer({
       await api.post(
         "/posts",
         { title, body: body || null, communityId },
-        token
+        bearerToken
       );
       setTitle("");
       setBody("");

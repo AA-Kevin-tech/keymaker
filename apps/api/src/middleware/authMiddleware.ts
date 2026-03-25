@@ -14,8 +14,16 @@ export function authMiddleware(req: Request, _res: Response, next: NextFunction)
     return;
   }
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { id: string; username: string };
-    req.user = { id: decoded.id, username: decoded.username };
+    const decoded = jwt.verify(token, env.JWT_SECRET) as {
+      id: string;
+      username: string;
+      email?: string | null;
+    };
+    req.user = {
+      id: decoded.id,
+      username: decoded.username,
+      ...(decoded.email !== undefined ? { email: decoded.email } : {}),
+    };
   } catch {
     // Invalid token: leave req.user unset
   }

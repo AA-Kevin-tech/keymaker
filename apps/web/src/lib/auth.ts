@@ -22,4 +22,5 @@ export function isAuthenticated(): boolean {
 export interface CurrentUser {
   id: string;
   username: string;
+  email?: string | null;
 }
