@@ -51,6 +51,20 @@ The Dockerfile builds the web app in a separate stage but the default `runner` s
 1. **Separate deployment** – Build and run the Next.js app elsewhere (e.g. Vercel, or another container) and set `NEXT_PUBLIC_API_URL` to your API base URL (e.g. `https://api.example.com/api`).
 2. **Same host, reverse proxy** – Build the web app (e.g. `pnpm run build --filter web`), export or serve the static output from the same host (e.g. Nginx) and reverse-proxy `/api` to the API container.
 
+### Railway note (important for Next.js)
+
+`NEXT_PUBLIC_API_URL` is compiled into the browser bundle at build time. For Docker-based web deploys, pass it as a build arg so `next build` sees it.
+
+Example:
+
+```bash
+docker build -f Dockerfile.web \
+  --build-arg NEXT_PUBLIC_API_URL="https://keymaker-production.up.railway.app/api" \
+  -t keymaker-web .
+```
+
+Also set it as a runtime env var on the web service for clarity, but build-time injection is the critical part.
+
 ## Reverse proxy
 
 In production, put the API behind HTTPS (e.g. Nginx, Caddy, or a cloud load balancer). Example Nginx upstream:
