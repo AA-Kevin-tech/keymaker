@@ -14,6 +14,17 @@ function getApiBase(): string {
   return base.replace(/\/$/, "");
 }
 
+/** Thrown when the API responds with a non-OK status; use `statusCode` to distinguish 404 vs other errors. */
+export class ApiError extends Error {
+  constructor(
+    message: string,
+    public readonly statusCode: number
+  ) {
+    super(message);
+    this.name = "ApiError";
+  }
+}
+
 async function request<T>(
   path: string,
   options: RequestInit & { token?: string } = {}
@@ -33,7 +44,8 @@ async function request<T>(
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ error: res.statusText }));
-    throw new Error((err as { error?: string }).error || "Request failed");
+    const message = (err as { error?: string }).error || "Request failed";
+    throw new ApiError(message, res.status);
   }
   if (res.status === 204) {
     return undefined as T;

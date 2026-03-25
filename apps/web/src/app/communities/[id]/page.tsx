@@ -1,10 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { api } from "@/lib/api";
 import { CommunityAboutCard } from "@/components/community/CommunityAboutCard";
 import { CommunityHeader } from "@/components/community/CommunityHeader";
 import { PostCard } from "@/components/post/PostCard";
-import type { Community, Post } from "@/lib/types";
+import { getCommunityBySlug, getCommunityFeedPosts } from "@/lib/server-community";
 
 export const dynamic = "force-dynamic";
 
@@ -12,33 +11,11 @@ interface Params {
   id: string;
 }
 
-async function getCommunity(slug: string): Promise<Community | null> {
-  try {
-    return await api.get<Community>(`/communities/${slug}`);
-  } catch (err) {
-    console.error(`[web] getCommunity failed for slug=${slug}`, err);
-    return null;
-  }
-}
-
-async function getFeed(slug: string): Promise<Post[]> {
-  try {
-    const res = await api.get<{ posts: Post[] }>(`/communities/${slug}/feed`);
-    return res.posts;
-  } catch (err) {
-    console.error(
-      `[web] getFeed failed for slug=${slug} — check API_URL / NEXT_PUBLIC_API_URL match the API where posts are created`,
-      err
-    );
-    return [];
-  }
-}
-
 export default async function CommunityFeedPage({ params }: { params: Params }) {
   const slug = params.id;
   const [community, posts] = await Promise.all([
-    getCommunity(slug),
-    getFeed(slug),
+    getCommunityBySlug(slug),
+    getCommunityFeedPosts(slug),
   ]);
 
   if (!community) notFound();

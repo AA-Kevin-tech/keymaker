@@ -67,6 +67,8 @@ Also set it as a runtime env var on the web service for clarity, but build-time 
 
 For **server-rendered pages** (community feeds, etc.), the web container also reads **`API_URL`**: the absolute API base (same value as `NEXT_PUBLIC_API_URL`, e.g. `https://your-api-service.up.railway.app/api`). Set this on the **web** service at runtime so SSR hits the same API as the browser. If `API_URL` is omitted, the server falls back to `NEXT_PUBLIC_API_URL` (which may be absent or stale if it was not present at **build** time).
 
+If the **web** and **API** are separate Railway services (each with its own public URL), the **web** hostname does **not** serve Express under `/api` by default—requests to `https://<web-host>/api/...` hit Next.js and return 404. Point **`NEXT_PUBLIC_API_URL`** and **`API_URL`** at the **API** service’s public base (e.g. `https://<api-service>.up.railway.app/api`), or use a reverse proxy so `/api` on the web host forwards to the API container.
+
 ## Reverse proxy
 
 In production, put the API behind HTTPS (e.g. Nginx, Caddy, or a cloud load balancer). Example Nginx upstream:

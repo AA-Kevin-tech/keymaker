@@ -1,26 +1,17 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { api } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 import { PostComposer } from "@/components/post/PostComposer";
-import type { Community } from "@/lib/types";
+import { getCommunityBySlug } from "@/lib/server-community";
 
 interface Params {
   id: string;
 }
 
-async function getCommunity(slug: string): Promise<Community | null> {
-  try {
-    return await api.get<Community>(`/communities/${slug}`);
-  } catch {
-    return null;
-  }
-}
-
 export default async function CreatePostPage({ params }: { params: Params }) {
   const slug = params.id;
-  const community = await getCommunity(slug);
+  const community = await getCommunityBySlug(slug);
   if (!community) notFound();
 
   return (
