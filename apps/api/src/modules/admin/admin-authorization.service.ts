@@ -80,6 +80,25 @@ export async function assertModeratorCommunityAccess(
   }
 }
 
+/**
+ * Read access to moderation log listings.
+ * - Platform staff: any community or platform-scoped (`communityId` null) data.
+ * - Community mods: only rows tied to a community they moderate; platform-scoped targets (e.g. user) are denied.
+ */
+export async function assertCanReadModerationHistory(
+  moderatorId: string,
+  communityId: string | null
+): Promise<void> {
+  if (await isPlatformStaff(moderatorId)) return;
+  if (communityId === null) {
+    throw new HttpError(403, "This moderation history is limited to platform moderators");
+  }
+  const allowed = await listModeratableCommunityIds(moderatorId);
+  if (!allowed.includes(communityId)) {
+    throw new HttpError(403, "You cannot view moderation history for this community");
+  }
+}
+
 export function getPlatformStaffRoles(): readonly ModeratorRoleName[] {
   return PLATFORM_STAFF_ROLES;
 }

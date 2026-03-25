@@ -29,7 +29,7 @@ export function PostView({ post, comments }: PostViewProps) {
   const handleDelete = async () => {
     if (!token || !isAuthor || deleting) return;
     const ok = window.confirm(
-      "Permanently delete this post? Comments and ratings on it will be removed. This cannot be undone."
+      "Remove this post? It will be hidden from the community. You can restore it later unless a moderator removed it."
     );
     if (!ok) return;
     setDeleting(true);
@@ -53,7 +53,7 @@ export function PostView({ post, comments }: PostViewProps) {
       {isAuthor && (
         <div className="mb-2 flex gap-2">
           <Button variant="ghost" onClick={handleDelete} disabled={deleting}>
-            {deleting ? "Deleting…" : "Delete post"}
+            {deleting ? "Removing…" : "Remove post"}
           </Button>
         </div>
       )}

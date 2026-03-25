@@ -1,8 +1,9 @@
 import { Prisma, ReportStatus } from "@prisma/client";
+import { deriveDeletionState } from "../../lib/content-deletion-state.js";
 import { HttpError } from "../../lib/http-error.js";
 import { prisma } from "../../db/prisma.js";
 import * as adminAuth from "../admin/admin-authorization.service.js";
-import * as audit from "../moderation/moderation-audit.service.js";
+import * as moderationAudit from "../moderation/moderation-audit.service.js";
 import * as moderationService from "../moderation/moderation.service.js";
 import type {
   AdminReportListQuery,
@@ -15,6 +16,22 @@ import type {
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 /** Sentinel ID so an empty moderator scope matches no rows. */
 const EMPTY_SCOPE_ID = "__scope_empty__";
+
+/** How an action row is attached to this report’s audit trail (for unified timeline). */
+export type ReportModerationTimelineSource = "report" | "content" | "subject_user";
+
+function inferReportModerationTimelineSource(
+  m: { targetType: string; targetId: string },
+  report: { id: string; targetType: string; targetId: string },
+  subjectUserId: string | null
+): ReportModerationTimelineSource {
+  if (m.targetType === "report" && m.targetId === report.id) return "report";
+  if (m.targetType === report.targetType && m.targetId === report.targetId) return "content";
+  if (m.targetType === "user" && subjectUserId !== null && m.targetId === subjectUserId) {
+    return "subject_user";
+  }
+  return "report";
+}
 
 export type TargetContext = {
   communityId: string | null;
@@ -296,6 +313,8 @@ export async function getReportDetailAdmin(moderatorId: string, reportId: string
         communityId: post.communityId,
         authorId: post.authorId,
         deletedAt: post.deletedAt?.toISOString() ?? null,
+        deletionKind: post.deletionKind ?? null,
+        deletionState: deriveDeletionState(post),
         cachedClarity: post.cachedClarity,
         cachedEvidence: post.cachedEvidence,
         cachedKindness: post.cachedKindness,
@@ -319,6 +338,8 @@ export async function getReportDetailAdmin(moderatorId: string, reportId: string
         authorId: comment.authorId,
         parentId: comment.parentId,
         deletedAt: comment.deletedAt?.toISOString() ?? null,
+        deletionKind: comment.deletionKind ?? null,
+        deletionState: deriveDeletionState(comment),
         cachedClarity: comment.cachedClarity,
         cachedEvidence: comment.cachedEvidence,
         cachedKindness: comment.cachedKindness,
@@ -356,12 +377,55 @@ export async function getReportDetailAdmin(moderatorId: string, reportId: string
     include: { reporter: { select: { id: true, username: true } } },
   });
 
-  const modHistory = await prisma.moderationAction.findMany({
-    where: { targetType: report.targetType, targetId: report.targetId },
-    orderBy: { createdAt: "desc" },
-    take: 50,
+  /** Subject user for linked warn/restrict/lift tied to this report via `metadata.relatedReportId`. */
+  const subjectUserIdForTrail =
+    report.targetType === "user" ? report.targetId : ctx.authorId ?? null;
+
+  const moderationOrBranches: Prisma.ModerationActionWhereInput[] = [
+    { targetType: "report", targetId: report.id },
+  ];
+  if (report.targetType === "post" || report.targetType === "comment") {
+    moderationOrBranches.push({
+      targetType: report.targetType,
+      targetId: report.targetId,
+    });
+  }
+  if (subjectUserIdForTrail) {
+    moderationOrBranches.push({
+      AND: [
+        { targetType: "user", targetId: subjectUserIdForTrail },
+        { metadata: { path: ["relatedReportId"], equals: report.id } },
+      ],
+    });
+  }
+
+  const modActions = await prisma.moderationAction.findMany({
+    where: { OR: moderationOrBranches },
+    orderBy: { createdAt: "asc" },
+    take: 150,
     include: { moderator: { select: { id: true, username: true } } },
   });
+
+  const seenIds = new Set<string>();
+  const moderationTimeline = modActions
+    .filter((m) => {
+      if (seenIds.has(m.id)) return false;
+      seenIds.add(m.id);
+      return true;
+    })
+    .map((m) => ({
+      id: m.id,
+      timelineSource: inferReportModerationTimelineSource(m, report, subjectUserIdForTrail),
+      actionType: m.actionType,
+      anchorTargetType: m.targetType,
+      anchorTargetId: m.targetId,
+      moderator: userSummary(m.moderator),
+      reasonCode: m.reasonCode,
+      reasonText: m.reason,
+      metadata: m.metadata ?? null,
+      communityId: m.communityId,
+      createdAt: m.createdAt.toISOString(),
+    }));
 
   let scoreSummary: Record<string, unknown> | null = null;
   let threadContext: Record<string, unknown> | null = null;
@@ -458,17 +522,7 @@ export async function getReportDetailAdmin(moderatorId: string, reportId: string
       createdAt: rr.createdAt.toISOString(),
       reporter: userSummary(rr.reporter),
     })),
-    moderationHistory: modHistory.map((m) => ({
-      id: m.id,
-      actionType: m.actionType,
-      targetType: m.targetType,
-      targetId: m.targetId,
-      moderator: userSummary(m.moderator),
-      reasonCode: m.reasonCode,
-      reasonText: m.reason,
-      createdAt: m.createdAt.toISOString(),
-      communityId: m.communityId,
-    })),
+    moderationTimeline,
     scoreSummary,
     threadContext,
   };
@@ -485,17 +539,19 @@ export async function dismissReport(moderatorId: string, reportId: string, body:
   await adminAuth.assertModeratorCommunityAccess(moderatorId, ctx.communityId);
 
   const reasonText = body.reasonText?.trim() || null;
+  const dismissReasonCode = body.reasonCode ?? "no_policy_violation";
 
   await prisma.$transaction(async (tx) => {
-    await audit.recordModerationAction(
+    await moderationAudit.logModerationAction(
       {
         moderatorId,
         communityId: ctx.communityId,
         actionType: "dismiss_report",
         targetType: "report",
         targetId: report.id,
-        reasonCode: "other",
+        reasonCode: dismissReasonCode,
         reasonText,
+        metadata: { relatedReportId: report.id },
       },
       tx
     );

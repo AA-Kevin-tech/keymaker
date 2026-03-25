@@ -1,4 +1,6 @@
+import type { Prisma } from "@prisma/client";
 import { ReportStatus } from "@prisma/client";
+import { deriveDeletionState } from "../../lib/content-deletion-state.js";
 import { HttpError } from "../../lib/http-error.js";
 import { prisma } from "../../db/prisma.js";
 import * as adminAuth from "../admin/admin-authorization.service.js";
@@ -42,6 +44,7 @@ function serializeModRow(m: {
   targetId: string;
   reasonCode: string | null;
   reason: string | null;
+  metadata: Prisma.JsonValue | null;
   communityId: string | null;
   createdAt: Date;
   moderator: { id: string; username: string } | null;
@@ -54,6 +57,7 @@ function serializeModRow(m: {
     moderator: m.moderator,
     reasonCode: m.reasonCode,
     reasonText: m.reason,
+    metadata: m.metadata ?? null,
     createdAt: m.createdAt.toISOString(),
     communityId: m.communityId,
   };
@@ -134,6 +138,8 @@ export async function getPostReview(moderatorId: string, postId: string) {
       ratingCount: post.ratingCount,
       createdAt: post.createdAt.toISOString(),
       deletedAt: post.deletedAt?.toISOString() ?? null,
+      deletionKind: post.deletionKind ?? null,
+      deletionState: deriveDeletionState(post),
     },
     author: post.author
       ? {
@@ -168,6 +174,8 @@ export async function getPostReview(moderatorId: string, postId: string) {
       author: c.author,
       createdAt: c.createdAt.toISOString(),
       deletedAt: c.deletedAt?.toISOString() ?? null,
+      deletionKind: c.deletionKind ?? null,
+      deletionState: deriveDeletionState(c),
       ratingCount: c.ratingCount,
     })),
     ratingSummary,
@@ -257,6 +265,8 @@ export async function getCommentReview(moderatorId: string, commentId: string) {
       ratingCount: comment.ratingCount,
       createdAt: comment.createdAt.toISOString(),
       deletedAt: comment.deletedAt?.toISOString() ?? null,
+      deletionKind: comment.deletionKind ?? null,
+      deletionState: deriveDeletionState(comment),
     },
     parentComment: parentComment
       ? {
@@ -273,6 +283,8 @@ export async function getCommentReview(moderatorId: string, commentId: string) {
       title: post.title,
       communityId: post.communityId,
       deletedAt: post.deletedAt?.toISOString() ?? null,
+      deletionKind: post.deletionKind ?? null,
+      deletionState: deriveDeletionState(post),
     },
     author: comment.author
       ? {

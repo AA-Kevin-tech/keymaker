@@ -1,8 +1,10 @@
 import type { Request, Response } from "express";
+import { ContentDeletionKind } from "@prisma/client";
+import { deriveDeletionState } from "../../lib/content-deletion-state.js";
 import * as postsService from "./posts.service.js";
 
 function toPostResponse(
-  post: NonNullable<Awaited<ReturnType<typeof postsService.getById>>> | Awaited<ReturnType<typeof postsService.softDelete>>
+  post: NonNullable<Awaited<ReturnType<typeof postsService.getById>>> | Awaited<ReturnType<typeof postsService.softDeleteByAuthor>>
 ) {
   if (!post) return null;
   return {
@@ -21,6 +23,8 @@ function toPostResponse(
     ratingCount: post.ratingCount,
     createdAt: post.createdAt.toISOString(),
     deletedAt: post.deletedAt?.toISOString() ?? null,
+    deletionKind: post.deletionKind ?? null,
+    deletionState: deriveDeletionState(post),
   };
 }
 
@@ -84,7 +88,7 @@ export async function hide(req: Request, res: Response): Promise<void> {
       res.status(403).json({ error: "Only the author can hide this post" });
       return;
     }
-    const post = await postsService.softDelete(req.params.id);
+    const post = await postsService.softDeleteByAuthor(req.params.id);
     res.json(toPostResponse(post));
   } catch (e) {
     res.status(404).json({ error: e instanceof Error ? e.message : "Hide failed" });
@@ -102,6 +106,16 @@ export async function restorePost(req: Request, res: Response): Promise<void> {
       res.status(403).json({ error: "Only the author can restore this post" });
       return;
     }
+    if (!existing.deletedAt) {
+      res.status(400).json({ error: "Post is not deleted" });
+      return;
+    }
+    if (existing.deletionKind === ContentDeletionKind.moderator_removed) {
+      res.status(403).json({
+        error: "This post was removed by moderators; it cannot be restored by the author",
+      });
+      return;
+    }
     const post = await postsService.restore(req.params.id);
     res.json(toPostResponse(post));
   } catch (e) {
@@ -109,7 +123,8 @@ export async function restorePost(req: Request, res: Response): Promise<void> {
   }
 }
 
-export async function permanentDelete(req: Request, res: Response): Promise<void> {
+/** Author-initiated soft delete (same persistence as `POST .../hide`). Preserves ratings and moderation history. */
+export async function authorDelete(req: Request, res: Response): Promise<void> {
   if (!req.user) {
     res.status(401).json({ error: "Authentication required" });
     return;
@@ -120,8 +135,8 @@ export async function permanentDelete(req: Request, res: Response): Promise<void
       res.status(403).json({ error: "Only the author can delete this post" });
       return;
     }
-    await postsService.removePermanently(req.params.id);
-    res.status(204).send();
+    const post = await postsService.softDeleteByAuthor(req.params.id);
+    res.json(toPostResponse(post));
   } catch (e) {
     res.status(404).json({ error: e instanceof Error ? e.message : "Delete failed" });
   }

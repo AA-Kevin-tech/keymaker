@@ -19,6 +19,17 @@ export type ReportReasonCode = (typeof REPORT_REASON_CODES)[number];
 export const MODERATION_REASON_CODES = [...REPORT_REASON_CODES] as const;
 export type ModerationReasonCode = (typeof MODERATION_REASON_CODES)[number];
 
+/** Why a report was closed without a punitive action (distinct from content-violation codes). */
+export const DISMISS_REASON_CODES = [
+  "no_policy_violation",
+  "duplicate_report",
+  "insufficient_evidence",
+  "handled_elsewhere",
+  "reporter_withdrew",
+  "other",
+] as const;
+export type DismissReasonCode = (typeof DISMISS_REASON_CODES)[number];
+
 export const REPORT_ACTION_TYPES = [
   "remove_post",
   "remove_comment",
@@ -46,6 +57,7 @@ export type AdminReportListQuery = {
 };
 
 export type DismissReportBody = {
+  reasonCode?: DismissReasonCode;
   reasonText?: string | null;
 };
 

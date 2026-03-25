@@ -35,6 +35,8 @@ export interface Post {
   ratingCount: number;
   createdAt: string;
   deletedAt?: string | null;
+  deletionKind?: "author_deleted" | "moderator_removed" | null;
+  deletionState?: string;
 }
 
 export interface Comment {
@@ -52,6 +54,8 @@ export interface Comment {
   ratingCount: number;
   createdAt: string;
   deletedAt?: string | null;
+  deletionKind?: "author_deleted" | "moderator_removed" | null;
+  deletionState?: string;
 }
 
 export interface RatingDimensions {

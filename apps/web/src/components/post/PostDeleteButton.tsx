@@ -24,7 +24,7 @@ export function PostDeleteButton({ postId, authorId }: PostDeleteButtonProps) {
   const handleDelete = async () => {
     if (!token || deleting) return;
     const ok = window.confirm(
-      "Permanently delete this post? Comments and ratings on it will be removed. This cannot be undone."
+      "Remove this post? It will be hidden from the community. You can restore it unless a moderator removed it."
     );
     if (!ok) return;
     setDeleting(true);

@@ -1,6 +1,7 @@
 import { ReportStatus, UserRestrictionType } from "@prisma/client";
 import { z } from "zod";
 import {
+  DISMISS_REASON_CODES,
   MODERATION_REASON_CODES,
   REPORT_ACTION_TYPES,
   REPORT_REASON_CODES,
@@ -32,6 +33,7 @@ export const adminReportListQuerySchema = z.object({
 });
 
 export const dismissReportBodySchema = z.object({
+  reasonCode: z.enum(DISMISS_REASON_CODES).optional(),
   reasonText: z.string().max(8000).trim().optional().nullable(),
 });
 

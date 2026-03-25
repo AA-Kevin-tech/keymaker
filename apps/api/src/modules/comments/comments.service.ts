@@ -1,4 +1,5 @@
 import type { Prisma } from "@prisma/client";
+import { ContentDeletionKind } from "@prisma/client";
 import { prisma } from "../../db/prisma.js";
 import type { CreateCommentBody } from "./comments.types.js";
 
@@ -29,26 +30,45 @@ export async function getById(id: string, includeDeleted = false) {
   });
 }
 
-export async function softDelete(id: string) {
+export async function softDeleteByAuthor(id: string) {
   return prisma.comment.update({
     where: { id },
-    data: { deletedAt: new Date() },
+    data: {
+      deletedAt: new Date(),
+      deletionKind: ContentDeletionKind.author_deleted,
+    },
     include: { author: { select: { id: true, username: true } } },
   });
 }
 
-export async function softDeleteTx(tx: Prisma.TransactionClient, id: string) {
+export async function softDeleteTx(
+  tx: Prisma.TransactionClient,
+  id: string,
+  deletionKind: ContentDeletionKind
+) {
   return tx.comment.update({
     where: { id },
-    data: { deletedAt: new Date() },
-    select: { id: true, postId: true, deletedAt: true },
+    data: {
+      deletedAt: new Date(),
+      deletionKind,
+    },
+    select: {
+      id: true,
+      postId: true,
+      authorId: true,
+      deletedAt: true,
+      deletionKind: true,
+    },
   });
 }
 
 export async function restore(id: string) {
   return prisma.comment.update({
     where: { id },
-    data: { deletedAt: null },
+    data: {
+      deletedAt: null,
+      deletionKind: null,
+    },
     include: { author: { select: { id: true, username: true } } },
   });
 }
@@ -56,7 +76,19 @@ export async function restore(id: string) {
 export async function restoreTx(tx: Prisma.TransactionClient, id: string) {
   return tx.comment.update({
     where: { id },
-    data: { deletedAt: null },
-    select: { id: true, postId: true, deletedAt: true },
+    data: {
+      deletedAt: null,
+      deletionKind: null,
+    },
+    select: { id: true, postId: true, deletedAt: true, deletionKind: true },
   });
+}
+
+/** Platform-only irreversible purge (see `POST /api/admin/comments/:id/purge`). */
+export async function purgeCommentPermanently(id: string) {
+  await prisma.$transaction([
+    prisma.rating.deleteMany({ where: { targetType: "comment", targetId: id } }),
+    prisma.moderationAction.deleteMany({ where: { targetType: "comment", targetId: id } }),
+    prisma.comment.delete({ where: { id } }),
+  ]);
 }

@@ -1,26 +1,59 @@
 import type { Prisma, Report } from "@prisma/client";
-import { UserRestrictionType } from "@prisma/client";
+import { ContentDeletionKind, UserRestrictionType } from "@prisma/client";
 import { HttpError } from "../../lib/http-error.js";
 import { prisma } from "../../db/prisma.js";
 import * as commentsService from "../comments/comments.service.js";
 import * as postsService from "../posts/posts.service.js";
+import { createUserRestrictionWithAuditTx } from "../user-restrictions/user-restrictions.service.js";
 import * as adminAuth from "../admin/admin-authorization.service.js";
-import type { ReportActionBody } from "../reports/reports.types.js";
-import * as audit from "./moderation-audit.service.js";
-import type { CreateModerationActionBody } from "./moderation.types.js";
+import type { ReportActionBody, ReportTargetType } from "../reports/reports.types.js";
+import * as moderationAudit from "./moderation-audit.service.js";
 
-export async function create(body: CreateModerationActionBody) {
-  return prisma.moderationAction.create({
-    data: {
-      actionType: body.actionType,
-      targetType: body.targetType,
-      targetId: body.targetId,
-      moderatorId: body.moderatorId,
-      communityId: body.communityId ?? null,
-      reasonCode: body.reasonCode ?? null,
-      reason: body.reason ?? null,
-    },
-  });
+/**
+ * Resolves which community scopes a moderation log query for `by-target`.
+ * `null` means platform-only (e.g. user targets, or missing content); only platform staff may read.
+ */
+export async function resolveCommunityScopeForModerationRead(
+  targetType: string,
+  targetId: string
+): Promise<string | null> {
+  const tt = targetType.toLowerCase();
+  if (tt === "post") {
+    const post = await prisma.post.findFirst({
+      where: { id: targetId },
+      select: { communityId: true },
+    });
+    if (!post) throw new HttpError(404, "Target not found");
+    return post.communityId;
+  }
+  if (tt === "comment") {
+    const comment = await prisma.comment.findFirst({
+      where: { id: targetId },
+      select: { postId: true },
+    });
+    if (!comment) throw new HttpError(404, "Target not found");
+    const post = await prisma.post.findUnique({
+      where: { id: comment.postId },
+      select: { communityId: true },
+    });
+    if (!post) throw new HttpError(404, "Target not found");
+    return post.communityId;
+  }
+  if (tt === "user") {
+    return null;
+  }
+  if (tt === "report") {
+    const report = await prisma.report.findUnique({
+      where: { id: targetId },
+      select: { targetType: true, targetId: true },
+    });
+    if (!report) throw new HttpError(404, "Target not found");
+    return resolveCommunityScopeForModerationRead(
+      report.targetType as ReportTargetType,
+      report.targetId
+    );
+  }
+  throw new HttpError(400, "Unsupported target type for moderation history");
 }
 
 export async function listByCommunity(communityId: string) {
@@ -84,11 +117,11 @@ export async function executeReportAction(
       }
       const post = await tx.post.findUnique({
         where: { id: report.targetId },
-        select: { id: true, communityId: true },
+        select: { id: true, communityId: true, authorId: true },
       });
       if (!post) throw new HttpError(404, "Post not found");
-      await postsService.softDeleteTx(tx, post.id);
-      await audit.recordModerationAction(
+      await postsService.softDeleteTx(tx, post.id, ContentDeletionKind.moderator_removed);
+      await moderationAudit.logModerationAction(
         {
           moderatorId,
           communityId: post.communityId,
@@ -97,6 +130,10 @@ export async function executeReportAction(
           targetId: post.id,
           reasonCode: body.reasonCode,
           reasonText,
+          metadata: {
+            relatedReportId: report.id,
+            targetUserId: post.authorId,
+          },
         },
         tx
       );
@@ -108,7 +145,7 @@ export async function executeReportAction(
       }
       const comment = await tx.comment.findUnique({
         where: { id: report.targetId },
-        select: { id: true, postId: true },
+        select: { id: true, postId: true, authorId: true },
       });
       if (!comment) throw new HttpError(404, "Comment not found");
       const post = await tx.post.findUnique({
@@ -116,8 +153,8 @@ export async function executeReportAction(
         select: { communityId: true },
       });
       if (!post) throw new HttpError(400, "Comment parent post is missing");
-      await commentsService.softDeleteTx(tx, comment.id);
-      await audit.recordModerationAction(
+      await commentsService.softDeleteTx(tx, comment.id, ContentDeletionKind.moderator_removed);
+      await moderationAudit.logModerationAction(
         {
           moderatorId,
           communityId: post.communityId,
@@ -126,6 +163,10 @@ export async function executeReportAction(
           targetId: comment.id,
           reasonCode: body.reasonCode,
           reasonText,
+          metadata: {
+            relatedReportId: report.id,
+            targetUserId: comment.authorId,
+          },
         },
         tx
       );
@@ -133,7 +174,15 @@ export async function executeReportAction(
     }
     case "warn_user": {
       const userId = await resolveReportSubjectUserId(tx, report);
-      await audit.recordModerationAction(
+      const note = await tx.moderatorNote.create({
+        data: {
+          userId,
+          moderatorId,
+          communityId: communityIdForLog,
+          noteText: reasonText ?? `Warning issued (${body.reasonCode})`,
+        },
+      });
+      await moderationAudit.logModerationAction(
         {
           moderatorId,
           communityId: communityIdForLog,
@@ -142,17 +191,14 @@ export async function executeReportAction(
           targetId: userId,
           reasonCode: body.reasonCode,
           reasonText,
+          metadata: {
+            relatedReportId: report.id,
+            targetUserId: userId,
+            noteId: note.id,
+          },
         },
         tx
       );
-      await tx.moderatorNote.create({
-        data: {
-          userId,
-          moderatorId,
-          communityId: communityIdForLog,
-          noteText: reasonText ?? `Warning issued (${body.reasonCode})`,
-        },
-      });
       return;
     }
     case "restrict_user": {
@@ -166,35 +212,20 @@ export async function executeReportAction(
         throw new HttpError(400, "params.endsAt is required for temp_suspend");
       }
       const scopeCommunityId = p.communityId ?? communityIdForLog ?? null;
-      await tx.userRestriction.create({
-        data: {
-          userId,
-          restrictionType: p.restrictionType,
-          communityId: scopeCommunityId,
-          reasonCode: body.reasonCode,
-          reasonText,
-          startsAt: new Date(),
-          endsAt,
-          createdById: moderatorId,
-          isActive: true,
-        },
+      await createUserRestrictionWithAuditTx(tx, {
+        subjectUserId: userId,
+        moderatorId,
+        restrictionType: p.restrictionType,
+        communityId: scopeCommunityId,
+        reasonCode: body.reasonCode,
+        reasonText,
+        endsAt,
+        relatedReportId: report.id,
       });
-      await audit.recordModerationAction(
-        {
-          moderatorId,
-          communityId: scopeCommunityId,
-          actionType: "restrict_user",
-          targetType: "user",
-          targetId: userId,
-          reasonCode: body.reasonCode,
-          reasonText,
-        },
-        tx
-      );
       return;
     }
     case "escalate": {
-      await audit.recordModerationAction(
+      await moderationAudit.logModerationAction(
         {
           moderatorId,
           communityId: communityIdForLog,
@@ -203,6 +234,7 @@ export async function executeReportAction(
           targetId: report.id,
           reasonCode: body.reasonCode,
           reasonText,
+          metadata: { relatedReportId: report.id },
         },
         tx
       );
@@ -222,13 +254,13 @@ export async function removePostByModerator(args: {
 }) {
   const post = await prisma.post.findFirst({
     where: { id: args.postId },
-    select: { id: true, communityId: true },
+    select: { id: true, communityId: true, authorId: true },
   });
   if (!post) throw new HttpError(404, "Post not found");
   await adminAuth.assertModeratorCommunityAccess(args.moderatorId, post.communityId);
   await prisma.$transaction(async (tx) => {
-    await postsService.softDeleteTx(tx, post.id);
-    await audit.recordModerationAction(
+    await postsService.softDeleteTx(tx, post.id, ContentDeletionKind.moderator_removed);
+    await moderationAudit.logModerationAction(
       {
         moderatorId: args.moderatorId,
         communityId: post.communityId,
@@ -237,6 +269,7 @@ export async function removePostByModerator(args: {
         targetId: post.id,
         reasonCode: args.reasonCode,
         reasonText: args.reasonText,
+        metadata: { targetUserId: post.authorId },
       },
       tx
     );
@@ -252,13 +285,13 @@ export async function restorePostByModerator(args: {
 }) {
   const post = await prisma.post.findFirst({
     where: { id: args.postId },
-    select: { id: true, communityId: true },
+    select: { id: true, communityId: true, authorId: true },
   });
   if (!post) throw new HttpError(404, "Post not found");
   await adminAuth.assertModeratorCommunityAccess(args.moderatorId, post.communityId);
   await prisma.$transaction(async (tx) => {
     await postsService.restoreTx(tx, post.id);
-    await audit.recordModerationAction(
+    await moderationAudit.logModerationAction(
       {
         moderatorId: args.moderatorId,
         communityId: post.communityId,
@@ -267,6 +300,7 @@ export async function restorePostByModerator(args: {
         targetId: post.id,
         reasonCode: args.reasonCode,
         reasonText: args.reasonText,
+        metadata: { targetUserId: post.authorId },
       },
       tx
     );
@@ -282,7 +316,7 @@ export async function removeCommentByModerator(args: {
 }) {
   const comment = await prisma.comment.findFirst({
     where: { id: args.commentId },
-    select: { id: true, postId: true },
+    select: { id: true, postId: true, authorId: true },
   });
   if (!comment) throw new HttpError(404, "Comment not found");
   const post = await prisma.post.findUnique({
@@ -292,8 +326,8 @@ export async function removeCommentByModerator(args: {
   if (!post) throw new HttpError(400, "Parent post missing");
   await adminAuth.assertModeratorCommunityAccess(args.moderatorId, post.communityId);
   await prisma.$transaction(async (tx) => {
-    await commentsService.softDeleteTx(tx, comment.id);
-    await audit.recordModerationAction(
+    await commentsService.softDeleteTx(tx, comment.id, ContentDeletionKind.moderator_removed);
+    await moderationAudit.logModerationAction(
       {
         moderatorId: args.moderatorId,
         communityId: post.communityId,
@@ -302,6 +336,7 @@ export async function removeCommentByModerator(args: {
         targetId: comment.id,
         reasonCode: args.reasonCode,
         reasonText: args.reasonText,
+        metadata: { targetUserId: comment.authorId },
       },
       tx
     );
@@ -323,7 +358,7 @@ export async function restoreCommentByModerator(args: {
 }) {
   const comment = await prisma.comment.findFirst({
     where: { id: args.commentId },
-    select: { id: true, postId: true },
+    select: { id: true, postId: true, authorId: true },
   });
   if (!comment) throw new HttpError(404, "Comment not found");
   const post = await prisma.post.findUnique({
@@ -334,7 +369,7 @@ export async function restoreCommentByModerator(args: {
   await adminAuth.assertModeratorCommunityAccess(args.moderatorId, post.communityId);
   await prisma.$transaction(async (tx) => {
     await commentsService.restoreTx(tx, comment.id);
-    await audit.recordModerationAction(
+    await moderationAudit.logModerationAction(
       {
         moderatorId: args.moderatorId,
         communityId: post.communityId,
@@ -343,6 +378,7 @@ export async function restoreCommentByModerator(args: {
         targetId: comment.id,
         reasonCode: args.reasonCode,
         reasonText: args.reasonText,
+        metadata: { targetUserId: comment.authorId },
       },
       tx
     );

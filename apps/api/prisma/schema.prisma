@@ -35,6 +35,12 @@ enum ModeratorRoleName {
   community_moderator
 }
 
+/// Who soft-deleted the content. Cleared on restore. Null when the row is active.
+enum ContentDeletionKind {
+  author_deleted
+  moderator_removed
+}
+
 model User {
   id        String   @id @default(cuid())
   username  String   @unique
@@ -57,6 +63,7 @@ model User {
   reportsReviewed              Report[]             @relation("ReportReviewedBy")
   restrictionsSubject          UserRestriction[]    @relation("RestrictionSubject")
   restrictionsCreated          UserRestriction[]    @relation("RestrictionCreatedBy")
+  restrictionsLifted           UserRestriction[]    @relation("RestrictionLiftedBy")
   appealsFiled                 Appeal[]             @relation("AppealAppellant")
   appealsReviewed              Appeal[]             @relation("AppealReviewedBy")
   moderatorNotesAbout          ModeratorNote[]      @relation("ModeratorNoteSubject")
@@ -104,7 +111,8 @@ model Post {
   communityId String    @map("community_id")
   authorId    String    @map("author_id")
   createdAt   DateTime  @default(now())
-  deletedAt  DateTime? @map("deleted_at")
+  deletedAt         DateTime?            @map("deleted_at")
+  deletionKind      ContentDeletionKind? @map("deletion_kind")
 
   cachedClarity  Float @default(0)
   cachedEvidence Float @default(0)
@@ -129,7 +137,8 @@ model Comment {
   authorId  String    @map("author_id")
   parentId  String?   @map("parent_id")
   createdAt DateTime  @default(now())
-  deletedAt DateTime? @map("deleted_at")
+  deletedAt         DateTime?            @map("deleted_at")
+  deletionKind      ContentDeletionKind? @map("deletion_kind")
 
   cachedClarity  Float @default(0)
   cachedEvidence Float @default(0)
@@ -176,7 +185,10 @@ model ModerationAction {
   moderatorId String   @map("moderator_id")
   communityId String?  @map("community_id")
   reasonCode  String?  @map("reason_code")
-  reason      String?  @db.Text
+  /// Free-text explanation; services use `reasonText` at the API boundary.
+  reason    String? @db.Text
+  /// JSON: relatedReportId, targetUserId, restrictionId, noteId (see moderation-audit.service).
+  metadata  Json?
   createdAt   DateTime @default(now())
 
   moderator User       @relation(fields: [moderatorId], references: [id], onDelete: Cascade)
@@ -221,10 +233,13 @@ model UserRestriction {
   createdById     String              @map("created_by")
   createdAt       DateTime            @default(now()) @map("created_at")
   isActive        Boolean             @default(true) @map("is_active")
+  deactivatedAt   DateTime?           @map("deactivated_at")
+  deactivatedById String?             @map("deactivated_by")
 
-  user      User       @relation("RestrictionSubject", fields: [userId], references: [id], onDelete: Cascade)
-  community Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
-  createdBy User       @relation("RestrictionCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  user          User       @relation("RestrictionSubject", fields: [userId], references: [id], onDelete: Cascade)
+  community     Community? @relation(fields: [communityId], references: [id], onDelete: Cascade)
+  createdBy     User       @relation("RestrictionCreatedBy", fields: [createdById], references: [id], onDelete: Cascade)
+  deactivatedBy User?      @relation("RestrictionLiftedBy", fields: [deactivatedById], references: [id], onDelete: SetNull)
 
   @@index([userId, isActive])
   @@index([communityId])

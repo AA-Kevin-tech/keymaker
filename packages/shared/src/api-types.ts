@@ -41,6 +41,10 @@ export interface PostResponse {
   ratingCount: number;
   createdAt: string;
   deletedAt?: string | null;
+  /** Raw enum when soft-deleted; null when active or legacy rows. */
+  deletionKind?: "author_deleted" | "moderator_removed" | null;
+  /** Derived: active | author_deleted | moderator_removed | legacy_deleted */
+  deletionState?: string;
 }
 
 export interface CommentResponse {
@@ -58,6 +62,8 @@ export interface CommentResponse {
   ratingCount: number;
   createdAt: string;
   deletedAt?: string | null;
+  deletionKind?: "author_deleted" | "moderator_removed" | null;
+  deletionState?: string;
 }
 
 export interface RatingResponse {

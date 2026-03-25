@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { deriveDeletionState } from "../../lib/content-deletion-state.js";
 import * as contentReviewService from "../content-review/content-review.service.js";
 import * as moderationService from "../moderation/moderation.service.js";
 
@@ -13,6 +14,8 @@ function toPostSummary(
     communityId: post.communityId,
     authorId: post.authorId,
     deletedAt: post.deletedAt?.toISOString() ?? null,
+    deletionKind: post.deletionKind ?? null,
+    deletionState: deriveDeletionState(post),
     cachedClarity: post.cachedClarity,
     cachedEvidence: post.cachedEvidence,
     cachedKindness: post.cachedKindness,
