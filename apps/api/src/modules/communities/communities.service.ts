@@ -1,4 +1,9 @@
+import { HttpError } from "../../lib/http-error.js";
 import { prisma } from "../../db/prisma.js";
+import {
+  assertUserMayCreateCommunity,
+  assertUserMayUpdateCommunitySettings,
+} from "../user-restrictions/restriction-enforcement.service.js";
 import type { CreateCommunityBody } from "./communities.types.js";
 import type { UpdateCommunitySettingsInput } from "./communities.schema.js";
 
@@ -15,11 +20,12 @@ export async function getBySlug(slug: string) {
   });
 }
 
-export async function create(body: CreateCommunityBody) {
+export async function create(body: CreateCommunityBody, creatorUserId: string) {
+  await assertUserMayCreateCommunity(creatorUserId);
   const slug = body.slug.toLowerCase().trim().replace(/\s+/g, "-");
   const existing = await prisma.community.findUnique({ where: { slug } });
   if (existing) {
-    throw new Error("Community with this slug already exists");
+    throw new HttpError(409, "Community with this slug already exists");
   }
   return prisma.community.create({
     data: {
@@ -34,9 +40,14 @@ export async function create(body: CreateCommunityBody) {
   });
 }
 
-export async function updateSettings(slug: string, body: UpdateCommunitySettingsInput) {
+export async function updateSettings(
+  slug: string,
+  body: UpdateCommunitySettingsInput,
+  actingUserId: string
+) {
   const community = await prisma.community.findUnique({ where: { slug } });
   if (!community) return null;
+  await assertUserMayUpdateCommunitySettings(actingUserId, community.id);
   const data: Record<string, number> = {};
   if (body.weightClarity !== undefined) data.weightClarity = body.weightClarity;
   if (body.weightEvidence !== undefined) data.weightEvidence = body.weightEvidence;

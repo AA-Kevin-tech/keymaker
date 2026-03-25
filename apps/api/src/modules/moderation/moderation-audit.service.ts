@@ -6,6 +6,9 @@ import { prisma } from "../../db/prisma.js";
  * DB column `reason` stores the value supplied as `reasonText` here (legacy name in schema).
  */
 export const MODERATION_AUDIT_ACTION_TYPES = [
+  "appeal_modified",
+  "appeal_reversed",
+  "appeal_upheld",
   "dismiss_report",
   "escalate",
   "lift_restriction",
@@ -25,6 +28,7 @@ export type ModerationActionMetadata = {
   targetUserId?: string;
   restrictionId?: string;
   noteId?: string;
+  appealId?: string;
 };
 
 export type LogModerationActionInput = {

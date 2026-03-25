@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { ContentDeletionKind } from "@prisma/client";
 import { deriveDeletionState } from "../../lib/content-deletion-state.js";
+import { respondIfHttpError } from "../../lib/respond-http-error.js";
 import * as postsService from "./posts.service.js";
 
 function toPostResponse(
@@ -40,6 +41,7 @@ export async function create(req: Request, res: Response): Promise<void> {
     });
     res.status(201).json(toPostResponse(post));
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });
   }
 }
@@ -73,6 +75,7 @@ export async function update(req: Request, res: Response): Promise<void> {
     const post = await postsService.update(req.params.id, req.body);
     res.json(toPostResponse(post));
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     res.status(404).json({ error: e instanceof Error ? e.message : "Update failed" });
   }
 }
@@ -91,6 +94,7 @@ export async function hide(req: Request, res: Response): Promise<void> {
     const post = await postsService.softDeleteByAuthor(req.params.id);
     res.json(toPostResponse(post));
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     res.status(404).json({ error: e instanceof Error ? e.message : "Hide failed" });
   }
 }
@@ -119,6 +123,7 @@ export async function restorePost(req: Request, res: Response): Promise<void> {
     const post = await postsService.restore(req.params.id);
     res.json(toPostResponse(post));
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     res.status(404).json({ error: e instanceof Error ? e.message : "Restore failed" });
   }
 }
@@ -138,6 +143,7 @@ export async function authorDelete(req: Request, res: Response): Promise<void> {
     const post = await postsService.softDeleteByAuthor(req.params.id);
     res.json(toPostResponse(post));
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     res.status(404).json({ error: e instanceof Error ? e.message : "Delete failed" });
   }
 }

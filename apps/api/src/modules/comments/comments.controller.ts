@@ -1,6 +1,7 @@
 import type { Request, Response } from "express";
 import { ContentDeletionKind } from "@prisma/client";
 import { deriveDeletionState } from "../../lib/content-deletion-state.js";
+import { respondIfHttpError } from "../../lib/respond-http-error.js";
 import * as commentsService from "./comments.service.js";
 
 function commentJson(
@@ -39,6 +40,7 @@ export async function create(req: Request, res: Response): Promise<void> {
     });
     res.status(201).json(commentJson(comment));
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     res.status(400).json({ error: e instanceof Error ? e.message : "Create failed" });
   }
 }
@@ -66,6 +68,7 @@ export async function hide(req: Request, res: Response): Promise<void> {
     const comment = await commentsService.softDeleteByAuthor(req.params.id);
     res.json(commentJson(comment));
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     res.status(404).json({ error: e instanceof Error ? e.message : "Hide failed" });
   }
 }
@@ -94,6 +97,7 @@ export async function restoreComment(req: Request, res: Response): Promise<void>
     const comment = await commentsService.restore(req.params.id);
     res.json(commentJson(comment));
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     res.status(404).json({ error: e instanceof Error ? e.message : "Restore failed" });
   }
 }

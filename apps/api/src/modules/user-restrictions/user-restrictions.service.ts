@@ -5,6 +5,95 @@ import { prisma } from "../../db/prisma.js";
 import * as adminAuth from "../admin/admin-authorization.service.js";
 import { logModerationAction } from "../moderation/moderation-audit.service.js";
 
+/** Derived flags for enforcement / admin UI. MVP: `temp_suspend` and `permanent_ban` disable both posting and rating. */
+export type EffectiveRestrictionFlags = {
+  canPost: boolean;
+  canRate: boolean;
+  postingBlocked: boolean;
+  ratingBlocked: boolean;
+  activeRestrictionTypes: UserRestrictionType[];
+};
+
+export function computeEffectiveRestrictionFlags(
+  restrictions: Array<{
+    restrictionType: UserRestrictionType;
+    communityId: string | null;
+    isActive: boolean;
+    endsAt: Date | null;
+  }>,
+  now: Date,
+  /** When set, only restrictions that are platform-wide or match this community apply. */
+  forCommunityId: string | null | undefined
+): EffectiveRestrictionFlags {
+  const active = restrictions.filter((r) => {
+    if (!r.isActive) return false;
+    if (r.endsAt !== null && r.endsAt.getTime() <= now.getTime()) return false;
+    if (r.communityId === null) return true;
+    if (forCommunityId === undefined) return true;
+    return r.communityId === forCommunityId;
+  });
+
+  let postingBlocked = false;
+  let ratingBlocked = false;
+  const types: UserRestrictionType[] = [];
+
+  for (const r of active) {
+    types.push(r.restrictionType);
+    switch (r.restrictionType) {
+      case UserRestrictionType.posting_block:
+        postingBlocked = true;
+        break;
+      case UserRestrictionType.rating_block:
+        ratingBlocked = true;
+        break;
+      case UserRestrictionType.temp_suspend:
+      case UserRestrictionType.permanent_ban:
+        postingBlocked = true;
+        ratingBlocked = true;
+        break;
+      default:
+        break;
+    }
+  }
+
+  return {
+    canPost: !postingBlocked,
+    canRate: !ratingBlocked,
+    postingBlocked,
+    ratingBlocked,
+    activeRestrictionTypes: [...new Set(types)],
+  };
+}
+
+export type EffectiveModerationState = {
+  asOf: string;
+  /** Only `user_restrictions` rows with `communityId` null. */
+  platformWide: EffectiveRestrictionFlags;
+  /** Any active scoped restriction in at least one community. */
+  hasCommunityScopedActive: boolean;
+};
+
+export async function getEffectiveModerationState(subjectUserId: string): Promise<EffectiveModerationState> {
+  const now = new Date();
+  const rows = await prisma.userRestriction.findMany({
+    where: { userId: subjectUserId },
+    select: { restrictionType: true, communityId: true, isActive: true, endsAt: true },
+  });
+  const platformRows = rows.filter((r) => r.communityId === null);
+  const platformWide = computeEffectiveRestrictionFlags(platformRows, now, null);
+  const hasCommunityScopedActive = rows.some((r) => {
+    if (r.communityId === null) return false;
+    if (!r.isActive) return false;
+    if (r.endsAt !== null && r.endsAt.getTime() <= now.getTime()) return false;
+    return true;
+  });
+  return {
+    asOf: now.toISOString(),
+    platformWide,
+    hasCommunityScopedActive,
+  };
+}
+
 /** Platform-wide restriction (`communityId` null) vs community-scoped. */
 export async function assertCanManageRestrictionScope(
   moderatorId: string,
@@ -92,10 +181,10 @@ export async function createRestrictionFromAdmin(
   subjectUserId: string,
   body: {
     restrictionType: UserRestrictionType;
-    communityId: string | null | undefined;
+    communityId?: string | null;
     reasonCode: string;
-    reasonText: string | null | undefined;
-    endsAt: string | null | undefined;
+    reasonText?: string | null;
+    endsAt?: string | null;
   }
 ) {
   const user = await prisma.user.findUnique({ where: { id: subjectUserId }, select: { id: true } });
@@ -191,54 +280,140 @@ export async function listRestrictionsForAdminView(moderatorId: string, subjectU
   };
 }
 
+export type DeactivateRestrictionTxOptions = {
+  /** If the row is already inactive, return null instead of throwing (appeal idempotency). */
+  idempotentIfInactive?: boolean;
+  /** When set, rejects if the restriction applies to a different user. */
+  expectedSubjectUserId?: string;
+};
+
+/**
+ * Lift a restriction inside a parent transaction (e.g. appeal modify/reversal).
+ */
+export async function deactivateRestrictionTx(
+  tx: Prisma.TransactionClient,
+  moderatorId: string,
+  restrictionId: string,
+  body: { reasonCode?: string; reasonText?: string | null },
+  options: DeactivateRestrictionTxOptions = {}
+) {
+  const reasonCode = body.reasonCode ?? "other";
+  const reasonText = body.reasonText?.trim() || null;
+
+  const r = await tx.userRestriction.findUnique({
+    where: { id: restrictionId },
+  });
+  if (!r) {
+    throw new HttpError(404, "Restriction not found");
+  }
+  if (options.expectedSubjectUserId && r.userId !== options.expectedSubjectUserId) {
+    throw new HttpError(400, "Restriction does not belong to this subject");
+  }
+  if (!r.isActive) {
+    if (options.idempotentIfInactive) {
+      return null;
+    }
+    throw new HttpError(400, "Restriction is already inactive");
+  }
+
+  await assertCanManageRestrictionScope(moderatorId, r.communityId);
+
+  const now = new Date();
+  await tx.userRestriction.update({
+    where: { id: restrictionId },
+    data: {
+      isActive: false,
+      deactivatedAt: now,
+      deactivatedById: moderatorId,
+    },
+  });
+
+  await logModerationAction(
+    {
+      moderatorId,
+      communityId: r.communityId,
+      actionType: "lift_restriction",
+      targetType: "user",
+      targetId: r.userId,
+      reasonCode,
+      reasonText,
+      metadata: {
+        restrictionId: r.id,
+        targetUserId: r.userId,
+      },
+    },
+    tx
+  );
+
+  return tx.userRestriction.findUnique({
+    where: { id: restrictionId },
+    include: restrictionInclude,
+  });
+}
+
 export async function deactivateRestriction(
   moderatorId: string,
   restrictionId: string,
   body: { reasonCode?: string; reasonText?: string | null }
 ) {
-  const reasonCode = body.reasonCode ?? "other";
-  const reasonText = body.reasonText?.trim() || null;
+  return prisma.$transaction((tx) =>
+    deactivateRestrictionTx(tx, moderatorId, restrictionId, body, { idempotentIfInactive: false })
+  );
+}
 
-  return prisma.$transaction(async (tx) => {
-    const r = await tx.userRestriction.findUnique({
-      where: { id: restrictionId },
-    });
-    if (!r) throw new HttpError(404, "Restriction not found");
-    if (!r.isActive) {
-      throw new HttpError(400, "Restriction is already inactive");
+/**
+ * POST /api/admin/users/:id/unrestrict — resolve restriction then soft-deactivate (audit via `deactivateRestriction`).
+ */
+export async function unrestrictUserFromAdmin(
+  moderatorId: string,
+  subjectUserId: string,
+  body: {
+    restrictionId?: string;
+    restrictionType?: UserRestrictionType;
+    communityId?: string | null;
+    reasonCode?: string;
+    reasonText?: string | null;
+  }
+) {
+  await assertCanViewAdminUser(moderatorId, subjectUserId);
+  let restrictionId = body.restrictionId;
+
+  if (restrictionId) {
+    const existing = await prisma.userRestriction.findUnique({ where: { id: restrictionId } });
+    if (!existing) {
+      throw new HttpError(404, "Restriction not found");
     }
-    await assertCanManageRestrictionScope(moderatorId, r.communityId);
+    if (existing.userId !== subjectUserId) {
+      throw new HttpError(400, "Restriction does not belong to this user");
+    }
+  }
 
-    const now = new Date();
-    await tx.userRestriction.update({
-      where: { id: restrictionId },
-      data: {
-        isActive: false,
-        deactivatedAt: now,
-        deactivatedById: moderatorId,
+  if (!restrictionId && body.restrictionType) {
+    const scopeUndefined = body.communityId === undefined;
+    const scope =
+      body.communityId === undefined ? undefined : body.communityId === null ? null : body.communityId.trim() || null;
+
+    const found = await prisma.userRestriction.findFirst({
+      where: {
+        userId: subjectUserId,
+        restrictionType: body.restrictionType,
+        isActive: true,
+        ...(scopeUndefined ? {} : { communityId: scope }),
       },
+      orderBy: { createdAt: "desc" },
     });
+    if (!found) {
+      throw new HttpError(404, "No matching active restriction found");
+    }
+    restrictionId = found.id;
+  }
 
-    await logModerationAction(
-      {
-        moderatorId,
-        communityId: r.communityId,
-        actionType: "lift_restriction",
-        targetType: "user",
-        targetId: r.userId,
-        reasonCode,
-        reasonText,
-        metadata: {
-          restrictionId: r.id,
-          targetUserId: r.userId,
-        },
-      },
-      tx
-    );
+  if (!restrictionId) {
+    throw new HttpError(400, "restrictionId could not be resolved");
+  }
 
-    return tx.userRestriction.findUnique({
-      where: { id: restrictionId },
-      include: restrictionInclude,
-    });
+  return deactivateRestriction(moderatorId, restrictionId, {
+    reasonCode: body.reasonCode,
+    reasonText: body.reasonText,
   });
 }

@@ -266,6 +266,8 @@ model Appeal {
   @@index([moderationActionId])
   @@index([appellantId])
   @@index([createdAt])
+  // Admin/community appeal queues: filter by status then paginate by recency.
+  @@index([status, createdAt(sort: Desc)])
   @@map("appeals")
 }
 

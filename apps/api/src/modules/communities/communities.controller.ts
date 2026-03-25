@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import { respondIfHttpError } from "../../lib/respond-http-error.js";
 import * as communitiesService from "./communities.service.js";
 
 export async function list(_req: Request, res: Response): Promise<void> {
@@ -32,7 +33,7 @@ export async function create(req: Request, res: Response): Promise<void> {
     return;
   }
   try {
-    const community = await communitiesService.create(req.body);
+    const community = await communitiesService.create(req.body, req.user.id);
     res.status(201).json({
       id: community.id,
       name: community.name,
@@ -45,6 +46,7 @@ export async function create(req: Request, res: Response): Promise<void> {
       createdAt: community.createdAt.toISOString(),
     });
   } catch (e) {
+    if (respondIfHttpError(res, e)) return;
     const message = e instanceof Error ? e.message : "Create failed";
     res.status(400).json({ error: message });
   }
@@ -56,20 +58,26 @@ export async function updateSettings(req: Request, res: Response): Promise<void>
     return;
   }
   const { slug } = req.params;
-  const community = await communitiesService.updateSettings(slug, req.body);
-  if (!community) {
-    res.status(404).json({ error: "Community not found" });
-    return;
+  try {
+    const community = await communitiesService.updateSettings(slug, req.body, req.user.id);
+    if (!community) {
+      res.status(404).json({ error: "Community not found" });
+      return;
+    }
+    res.json({
+      id: community.id,
+      name: community.name,
+      slug: community.slug,
+      weightClarity: community.weightClarity,
+      weightEvidence: community.weightEvidence,
+      weightKindness: community.weightKindness,
+      weightNovelty: community.weightNovelty,
+      decayHalfLifeSeconds: community.decayHalfLifeSeconds,
+      createdAt: community.createdAt.toISOString(),
+    });
+  } catch (e) {
+    if (respondIfHttpError(res, e)) return;
+    const message = e instanceof Error ? e.message : "Update failed";
+    res.status(500).json({ error: message });
   }
-  res.json({
-    id: community.id,
-    name: community.name,
-    slug: community.slug,
-    weightClarity: community.weightClarity,
-    weightEvidence: community.weightEvidence,
-    weightKindness: community.weightKindness,
-    weightNovelty: community.weightNovelty,
-    decayHalfLifeSeconds: community.decayHalfLifeSeconds,
-    createdAt: community.createdAt.toISOString(),
-  });
 }

@@ -1,10 +1,24 @@
+import { HttpError } from "../../lib/http-error.js";
 import { prisma } from "../../db/prisma.js";
 import type { UpsertRatingBody } from "./ratings.types.js";
 import { recomputeForTarget } from "../aggregates/aggregate.service.js";
 import { recomputeForUser } from "../reputation/reputation.service.js";
 import type { TargetType } from "@keymaker/shared";
+import {
+  assertUserMayRateInCommunity,
+  resolveCommunityIdForRatingTarget,
+} from "../user-restrictions/restriction-enforcement.service.js";
 
 export async function upsertRating(body: UpsertRatingBody) {
+  const communityId = await resolveCommunityIdForRatingTarget(
+    body.targetType as "post" | "comment",
+    body.targetId
+  );
+  if (communityId === null) {
+    throw new HttpError(404, "Rating target not found");
+  }
+  await assertUserMayRateInCommunity(body.raterId, communityId);
+
   const rating = await prisma.rating.upsert({
     where: {
       targetType_targetId_raterId: {

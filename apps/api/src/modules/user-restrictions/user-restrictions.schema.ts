@@ -22,7 +22,27 @@ export const createUserRestrictionBodySchema = z
     }
   });
 
-export const deactivateUserRestrictionBodySchema = z.object({
-  reasonCode: z.enum(MODERATION_REASON_CODES).optional(),
-  reasonText: z.string().max(8000).trim().optional().nullable(),
-});
+/**
+ * POST /api/admin/users/:id/unrestrict — resolve an active restriction to lift.
+ * Provide `restrictionId` or (`restrictionType` + optional `communityId` to disambiguate).
+ */
+export const unrestrictUserBodySchema = z
+  .object({
+    restrictionId: cuidLike.optional(),
+    restrictionType: z.nativeEnum(UserRestrictionType).optional(),
+    communityId: cuidLike.optional().nullable(),
+    reasonCode: z.enum(MODERATION_REASON_CODES).optional(),
+    reasonText: z.string().max(8000).trim().optional().nullable(),
+  })
+  .superRefine((val, ctx) => {
+    if (!val.restrictionId && !val.restrictionType) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "restrictionId or restrictionType is required",
+        path: ["restrictionId"],
+      });
+    }
+  });
+
+/** Alias for POST …/restrict — same shape as create restriction from admin. */
+export const restrictUserBodySchema = createUserRestrictionBodySchema;

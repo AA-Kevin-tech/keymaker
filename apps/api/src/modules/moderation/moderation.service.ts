@@ -290,20 +290,12 @@ export async function restorePostByModerator(args: {
   if (!post) throw new HttpError(404, "Post not found");
   await adminAuth.assertModeratorCommunityAccess(args.moderatorId, post.communityId);
   await prisma.$transaction(async (tx) => {
-    await postsService.restoreTx(tx, post.id);
-    await moderationAudit.logModerationAction(
-      {
-        moderatorId: args.moderatorId,
-        communityId: post.communityId,
-        actionType: "restore_post",
-        targetType: "post",
-        targetId: post.id,
-        reasonCode: args.reasonCode,
-        reasonText: args.reasonText,
-        metadata: { targetUserId: post.authorId },
-      },
-      tx
-    );
+    await restorePostByModeratorInTx(tx, {
+      postId: args.postId,
+      moderatorId: args.moderatorId,
+      reasonCode: args.reasonCode,
+      reasonText: args.reasonText,
+    });
   });
   return postsService.getById(post.id, true);
 }
@@ -368,20 +360,12 @@ export async function restoreCommentByModerator(args: {
   if (!post) throw new HttpError(400, "Parent post missing");
   await adminAuth.assertModeratorCommunityAccess(args.moderatorId, post.communityId);
   await prisma.$transaction(async (tx) => {
-    await commentsService.restoreTx(tx, comment.id);
-    await moderationAudit.logModerationAction(
-      {
-        moderatorId: args.moderatorId,
-        communityId: post.communityId,
-        actionType: "restore_comment",
-        targetType: "comment",
-        targetId: comment.id,
-        reasonCode: args.reasonCode,
-        reasonText: args.reasonText,
-        metadata: { targetUserId: comment.authorId },
-      },
-      tx
-    );
+    await restoreCommentByModeratorInTx(tx, {
+      commentId: args.commentId,
+      moderatorId: args.moderatorId,
+      reasonCode: args.reasonCode,
+      reasonText: args.reasonText,
+    });
   });
   return prisma.comment.findFirst({
     where: { id: comment.id },
@@ -390,4 +374,103 @@ export async function restoreCommentByModerator(args: {
       post: { select: { id: true, title: true, communityId: true } },
     },
   });
+}
+
+/** Restore post + audit inside an existing transaction (appeals). Idempotent if already active. */
+export async function restorePostByModeratorInTx(
+  tx: Prisma.TransactionClient,
+  args: {
+    postId: string;
+    moderatorId: string;
+    reasonCode: string;
+    reasonText: string | null;
+  }
+): Promise<void> {
+  const post = await tx.post.findFirst({
+    where: { id: args.postId },
+    select: {
+      id: true,
+      communityId: true,
+      authorId: true,
+      deletedAt: true,
+      deletionKind: true,
+    },
+  });
+  if (!post) {
+    throw new HttpError(404, "Post not found");
+  }
+  await adminAuth.assertModeratorCommunityAccess(args.moderatorId, post.communityId);
+  if (!post.deletedAt) {
+    return;
+  }
+  if (post.deletionKind !== ContentDeletionKind.moderator_removed) {
+    throw new HttpError(
+      400,
+      "Post was not removed by moderators; automatic restore is unsafe — use content tools manually"
+    );
+  }
+  await postsService.restoreTx(tx, post.id);
+  await moderationAudit.logModerationAction(
+    {
+      moderatorId: args.moderatorId,
+      communityId: post.communityId,
+      actionType: "restore_post",
+      targetType: "post",
+      targetId: post.id,
+      reasonCode: args.reasonCode,
+      reasonText: args.reasonText,
+      metadata: { targetUserId: post.authorId },
+    },
+    tx
+  );
+}
+
+/** Restore comment + audit inside an existing transaction (appeals). Idempotent if already active. */
+export async function restoreCommentByModeratorInTx(
+  tx: Prisma.TransactionClient,
+  args: {
+    commentId: string;
+    moderatorId: string;
+    reasonCode: string;
+    reasonText: string | null;
+  }
+): Promise<void> {
+  const comment = await tx.comment.findFirst({
+    where: { id: args.commentId },
+    select: { id: true, postId: true, authorId: true, deletedAt: true, deletionKind: true },
+  });
+  if (!comment) {
+    throw new HttpError(404, "Comment not found");
+  }
+  const post = await tx.post.findUnique({
+    where: { id: comment.postId },
+    select: { communityId: true },
+  });
+  if (!post) {
+    throw new HttpError(400, "Parent post missing");
+  }
+  await adminAuth.assertModeratorCommunityAccess(args.moderatorId, post.communityId);
+  if (!comment.deletedAt) {
+    return;
+  }
+  if (comment.deletionKind !== ContentDeletionKind.moderator_removed) {
+    throw new HttpError(
+      400,
+      "Comment was not removed by moderators; automatic restore is unsafe — use content tools manually"
+    );
+  }
+  await commentsService.restoreTx(tx, comment.id);
+  await moderationAudit.logModerationAction(
+    {
+      moderatorId: args.moderatorId,
+      communityId: post.communityId,
+      actionType: "restore_comment",
+      targetType: "comment",
+      targetId: comment.id,
+      reasonCode: args.reasonCode,
+      reasonText: args.reasonText,
+      metadata: { targetUserId: comment.authorId },
+    },
+    tx
+  );
 }

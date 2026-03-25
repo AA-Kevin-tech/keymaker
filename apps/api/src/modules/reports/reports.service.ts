@@ -12,6 +12,7 @@ import type {
   ReportActionBody,
   ReportTargetType,
 } from "./reports.types.js";
+import { assertUserMayFileReport } from "../user-restrictions/restriction-enforcement.service.js";
 
 const DUPLICATE_WINDOW_MS = 24 * 60 * 60 * 1000;
 /** Sentinel ID so an empty moderator scope matches no rows. */
@@ -145,6 +146,8 @@ export async function createReport(reporterId: string, body: CreateReportBody) {
   if (ctx.authorId === reporterId) {
     throw new HttpError(400, "You cannot report your own content");
   }
+
+  await assertUserMayFileReport(reporterId, ctx.communityId);
 
   const duplicate = await prisma.report.findFirst({
     where: {

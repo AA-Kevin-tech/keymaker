@@ -1,9 +1,19 @@
 import type { Prisma } from "@prisma/client";
 import { ContentDeletionKind } from "@prisma/client";
+import { HttpError } from "../../lib/http-error.js";
 import { prisma } from "../../db/prisma.js";
+import { assertUserMayPostInCommunity } from "../user-restrictions/restriction-enforcement.service.js";
 import type { CreateCommentBody } from "./comments.types.js";
 
 export async function create(body: CreateCommentBody) {
+  const post = await prisma.post.findUnique({
+    where: { id: body.postId },
+    select: { communityId: true },
+  });
+  if (!post) {
+    throw new HttpError(404, "Post not found");
+  }
+  await assertUserMayPostInCommunity(body.authorId, post.communityId);
   return prisma.comment.create({
     data: {
       body: body.body.trim(),
@@ -31,6 +41,21 @@ export async function getById(id: string, includeDeleted = false) {
 }
 
 export async function softDeleteByAuthor(id: string) {
+  const c = await prisma.comment.findUnique({
+    where: { id },
+    select: { authorId: true, postId: true },
+  });
+  if (!c) {
+    throw new HttpError(404, "Comment not found");
+  }
+  const post = await prisma.post.findUnique({
+    where: { id: c.postId },
+    select: { communityId: true },
+  });
+  if (!post) {
+    throw new HttpError(400, "Parent post missing");
+  }
+  await assertUserMayPostInCommunity(c.authorId, post.communityId);
   return prisma.comment.update({
     where: { id },
     data: {
@@ -63,6 +88,21 @@ export async function softDeleteTx(
 }
 
 export async function restore(id: string) {
+  const c = await prisma.comment.findUnique({
+    where: { id },
+    select: { authorId: true, postId: true },
+  });
+  if (!c) {
+    throw new HttpError(404, "Comment not found");
+  }
+  const post = await prisma.post.findUnique({
+    where: { id: c.postId },
+    select: { communityId: true },
+  });
+  if (!post) {
+    throw new HttpError(400, "Parent post missing");
+  }
+  await assertUserMayPostInCommunity(c.authorId, post.communityId);
   return prisma.comment.update({
     where: { id },
     data: {

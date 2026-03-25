@@ -1,9 +1,12 @@
 import type { Prisma } from "@prisma/client";
 import { ContentDeletionKind } from "@prisma/client";
+import { HttpError } from "../../lib/http-error.js";
 import { prisma } from "../../db/prisma.js";
+import { assertUserMayPostInCommunity } from "../user-restrictions/restriction-enforcement.service.js";
 import type { CreatePostBody, UpdatePostBody } from "./posts.types.js";
 
 export async function create(body: CreatePostBody) {
+  await assertUserMayPostInCommunity(body.authorId, body.communityId);
   return prisma.post.create({
     data: {
       title: body.title.trim(),
@@ -30,6 +33,14 @@ export async function getById(id: string, includeDeleted = false) {
 }
 
 export async function update(id: string, body: UpdatePostBody) {
+  const pre = await prisma.post.findUnique({
+    where: { id },
+    select: { authorId: true, communityId: true },
+  });
+  if (!pre) {
+    throw new HttpError(404, "Post not found");
+  }
+  await assertUserMayPostInCommunity(pre.authorId, pre.communityId);
   return prisma.post.update({
     where: { id },
     data: {
@@ -45,6 +56,14 @@ export async function update(id: string, body: UpdatePostBody) {
 
 /** Author hide / author DELETE — soft delete, reversible by author if not moderator_removed. */
 export async function softDeleteByAuthor(id: string) {
+  const pre = await prisma.post.findUnique({
+    where: { id },
+    select: { authorId: true, communityId: true },
+  });
+  if (!pre) {
+    throw new HttpError(404, "Post not found");
+  }
+  await assertUserMayPostInCommunity(pre.authorId, pre.communityId);
   return prisma.post.update({
     where: { id },
     data: {
@@ -80,6 +99,14 @@ export async function softDeleteTx(
 }
 
 export async function restore(id: string) {
+  const pre = await prisma.post.findUnique({
+    where: { id },
+    select: { authorId: true, communityId: true },
+  });
+  if (!pre) {
+    throw new HttpError(404, "Post not found");
+  }
+  await assertUserMayPostInCommunity(pre.authorId, pre.communityId);
   return prisma.post.update({
     where: { id },
     data: {
