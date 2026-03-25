@@ -44,4 +44,6 @@ COPY --from=api-builder /app/packages/shared ./packages/shared
 
 WORKDIR /app/apps/api
 EXPOSE 3001
-CMD ["node", "dist/server.js"]
+# Apply pending Prisma migrations before listening (DATABASE_URL must be set at runtime).
+# Safe for single-instance API; use a release job instead if you run multiple replicas with staggered deploys.
+CMD ["sh", "-c", "npx prisma migrate deploy && node dist/server.js"]

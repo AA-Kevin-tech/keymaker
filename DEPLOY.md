@@ -36,11 +36,13 @@ Optional:
 
 ### Database
 
-The container does not run migrations on startup. Run migrations before or when deploying:
+The API image **runs `prisma migrate deploy` on each container start** before `node dist/server.js`, so pending migrations apply automatically when `DATABASE_URL` is set (e.g. Railway). If a migration fails, the process exits and the platform should surface the error in deploy logs.
 
-- From your host (with a Prisma/Node setup):  
-  `pnpm run db:migrate` (or `pnpm --filter api exec prisma migrate deploy`) with the same `DATABASE_URL`.
-- Or run a one-off migration container that uses the same image and env and executes `node dist/scripts/migrate.js` (if you add such a script), or use your platform’s migration step.
+You can still run migrations manually from your machine when the DB is reachable:
+
+- `pnpm run db:migrate` (same as `pnpm --filter api exec prisma migrate deploy`) with the same `DATABASE_URL`.
+
+For **multiple API replicas**, Prisma uses a migration lock; avoid concurrent deploys that start many new containers at once, or run migrations in a dedicated release step instead.
 
 Ensure the database exists and is reachable from the container (same network or allowed firewall rules).
 
