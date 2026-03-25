@@ -20,13 +20,13 @@ export function ScoreBadges({ post }: ScoreBadgesProps) {
       {AXES.map(({ key, label }) => (
         <span
           key={key}
-          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-700"
+          className="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium bg-canvas text-gray-700"
         >
           {label}: {post[key].toFixed(1)}
         </span>
       ))}
       {post.ratingCount > 0 && (
-        <span className="text-xs text-gray-500">{post.ratingCount} ratings</span>
+        <span className="text-xs text-meta">{post.ratingCount} ratings</span>
       )}
     </div>
   );

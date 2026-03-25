@@ -62,5 +62,13 @@ export async function getFeed(communitySlug: string, limit = 20, offset = 0) {
   withScore.sort((a: WithScore, b: WithScore) => b.score - a.score);
 
   const paginated = withScore.slice(offset, offset + limit);
-  return paginated.map(({ post }: WithScore) => post);
+  const communitySummary = {
+    id: community.id,
+    name: community.name,
+    slug: community.slug,
+  };
+  return {
+    posts: paginated.map(({ post }: WithScore) => post),
+    community: communitySummary,
+  };
 }

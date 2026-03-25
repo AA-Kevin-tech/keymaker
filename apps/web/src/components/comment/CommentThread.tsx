@@ -15,7 +15,7 @@ export function CommentThread({
   onCommentHidden,
 }: CommentThreadProps) {
   if (comments.length === 0) {
-    return <p className="text-gray-500 text-sm py-4">No comments yet.</p>;
+    return <p className="py-4 text-sm text-meta">No comments yet.</p>;
   }
   return (
     <div className="space-y-0">

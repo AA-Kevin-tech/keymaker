@@ -36,13 +36,13 @@ export function CommentItem({
   };
 
   return (
-    <div className="py-3 border-b border-gray-100 last:border-0">
-      <p className="text-gray-800">{comment.body}</p>
-      <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 flex-wrap">
+    <div className="border-b border-subtle py-3 last:border-0">
+      <p className="text-[15px] leading-snug text-gray-800">{comment.body}</p>
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-meta">
         {comment.author && (
           <Link
             href={`/users/${comment.author.username}`}
-            className="text-blue-600 hover:underline"
+            className="hover:text-link hover:underline"
           >
             {comment.author.username}
           </Link>
@@ -51,7 +51,7 @@ export function CommentItem({
         {canHide && (
           <Button
             variant="ghost"
-            className="ml-auto text-xs py-1 px-2"
+            className="ml-auto px-2 py-1 text-xs"
             onClick={handleHide}
             disabled={hiding}
           >
@@ -60,7 +60,7 @@ export function CommentItem({
         )}
       </div>
       {showScores && comment.ratingCount > 0 && (
-        <div className="flex gap-2 mt-1 text-xs text-gray-500">
+        <div className="mt-1.5 flex flex-wrap gap-2 text-xs text-meta">
           <span>C: {comment.cachedClarity.toFixed(1)}</span>
           <span>E: {comment.cachedEvidence.toFixed(1)}</span>
           <span>K: {comment.cachedKindness.toFixed(1)}</span>

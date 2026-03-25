@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { api } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
+import { CommunityAboutCard } from "@/components/community/CommunityAboutCard";
 import { CommunityHeader } from "@/components/community/CommunityHeader";
 import { PostCard } from "@/components/post/PostCard";
 import type { Community, Post } from "@/lib/types";
@@ -38,23 +39,28 @@ export default async function CommunityFeedPage({ params }: { params: Params }) 
   if (!community) notFound();
 
   return (
-    <main className="py-6">
-      <CommunityHeader community={community} />
-      <Link
-        href={`/communities/${slug}/create`}
-        className="inline-block mb-4 text-blue-600 hover:underline font-medium text-sm"
-      >
-        New post
-      </Link>
-      {posts.length === 0 ? (
-        <p className="text-gray-500">No posts yet.</p>
-      ) : (
-        <div className="space-y-3">
-          {posts.map((post) => (
-            <PostCard key={post.id} post={post} />
-          ))}
-        </div>
-      )}
+    <main className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-8">
+      <div className="min-w-0">
+        <CommunityHeader community={community} />
+        <Link
+          href={`/communities/${slug}/create`}
+          className="mb-4 inline-flex items-center rounded-full border border-subtle bg-elevated px-4 py-1.5 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-canvas"
+        >
+          New post
+        </Link>
+        {posts.length === 0 ? (
+          <p className="text-meta">No posts yet.</p>
+        ) : (
+          <div className="overflow-hidden rounded-md border border-subtle bg-elevated divide-y divide-subtle">
+            {posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        )}
+      </div>
+      <aside className="min-w-0 lg:sticky lg:top-14 lg:self-start">
+        <CommunityAboutCard community={community} />
+      </aside>
     </main>
   );
 }

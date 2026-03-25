@@ -9,9 +9,9 @@ interface CommunityCardProps {
 export function CommunityCard({ community }: CommunityCardProps) {
   return (
     <Link href={`/communities/${community.slug}`}>
-      <Card className="p-4 hover:border-gray-300 transition cursor-pointer">
+      <Card className="cursor-pointer p-4 shadow-none transition hover:bg-canvas">
         <h3 className="font-medium text-gray-900">{community.name}</h3>
-        <p className="text-sm text-gray-500">/{community.slug}</p>
+        <p className="text-sm text-meta">/{community.slug}</p>
       </Card>
     </Link>
   );

@@ -50,8 +50,11 @@ export function PostView({ post, comments }: PostViewProps) {
   };
 
   return (
-    <main className="py-6">
-      <Link href={`/communities/${post.community?.slug ?? post.communityId}`} className="text-blue-600 hover:underline text-sm mb-4 inline-block">
+    <main className="py-2 sm:py-4">
+      <Link
+        href={`/communities/${post.community?.slug ?? post.communityId}`}
+        className="mb-4 inline-block text-sm text-link hover:underline"
+      >
         ← Back to community
       </Link>
       {isHidden && (
@@ -73,8 +76,8 @@ export function PostView({ post, comments }: PostViewProps) {
         </div>
       )}
       <PostDetail post={post} />
-      <section className="mt-6">
-        <h2 className="text-lg font-medium mb-2">Rate this post</h2>
+      <section className="mt-6 rounded-md border border-subtle bg-elevated p-4 sm:p-5">
+        <h2 className="mb-3 text-lg font-medium text-gray-900">Rate this post</h2>
         <RatingWidget
           targetType="post"
           targetId={post.id}
@@ -94,8 +97,8 @@ export function PostView({ post, comments }: PostViewProps) {
           }}
         />
       </section>
-      <section className="mt-8">
-        <h2 className="text-lg font-medium mb-2">Comments</h2>
+      <section className="mt-8 rounded-md border border-subtle bg-elevated p-4 sm:p-5">
+        <h2 className="mb-3 text-lg font-medium text-gray-900">Comments</h2>
         <CommentComposer
           postId={post.id}
           authorId=""
