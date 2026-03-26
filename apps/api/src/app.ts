@@ -8,6 +8,9 @@ const app: Express = express();
 app.use(cors());
 app.use(express.json());
 app.use(authMiddleware);
+app.get("/", (_req, res) => {
+  res.status(200).send("OK");
+});
 app.use("/api", apiRouter);
 app.use(errorMiddleware);
 
