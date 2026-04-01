@@ -39,6 +39,7 @@ async function request<T>(
   }
   const apiBase = getApiBase();
   const res = await fetch(`${apiBase}${path.startsWith("/") ? path : `/${path}`}`, {
+    ...(typeof window === "undefined" ? { cache: "no-store" as const } : {}),
     ...init,
     headers,
   });

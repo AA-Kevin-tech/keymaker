@@ -22,12 +22,13 @@ export default function CreateCommunityPage() {
     setError(null);
     setLoading(true);
     try {
-      await api.post(
+      const normalizedSlug = slug.trim().toLowerCase().replace(/\s+/g, "-");
+      const created = await api.post<{ slug: string }>(
         "/communities",
-        { name: name.trim(), slug: slug.trim().toLowerCase().replace(/\s+/g, "-") },
+        { name: name.trim(), slug: normalizedSlug },
         token ?? undefined
       );
-      router.push("/communities");
+      router.replace(`/communities/${created.slug}`);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create community");

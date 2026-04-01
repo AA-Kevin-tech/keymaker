@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Textarea } from "@/components/ui/Textarea";
@@ -16,6 +17,7 @@ export function PostComposer({
   communityId,
   communitySlug,
 }: PostComposerProps) {
+  const router = useRouter();
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [loading, setLoading] = useState(false);
@@ -47,7 +49,8 @@ export function PostComposer({
       );
       setTitle("");
       setBody("");
-      window.location.href = `/communities/${communitySlug}`;
+      router.replace(`/communities/${communitySlug}`);
+      router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to create post");
     } finally {
