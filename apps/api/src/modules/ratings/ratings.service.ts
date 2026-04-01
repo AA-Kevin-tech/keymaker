@@ -30,7 +30,6 @@ export async function upsertRating(body: UpsertRatingBody) {
     update: {
       clarity: body.clarity,
       evidence: body.evidence,
-      kindness: body.kindness,
       novelty: body.novelty,
     },
     create: {
@@ -39,7 +38,6 @@ export async function upsertRating(body: UpsertRatingBody) {
       raterId: body.raterId,
       clarity: body.clarity,
       evidence: body.evidence,
-      kindness: body.kindness,
       novelty: body.novelty,
     },
   });

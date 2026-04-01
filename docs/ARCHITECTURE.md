@@ -54,7 +54,7 @@ Business logic and ranking live in **services** (and ranking module); controller
 
 - Next.js 14 with App Router under `src/app/`.
 - UI calls the API with `NEXT_PUBLIC_API_URL`; auth token stored client-side (e.g. in memory or storage) and sent as Bearer token.
-- Minimal, readable, functional UI; no single karma/upvotes/downvotes—evaluation is four-axis only (clarity, evidence, kindness, novelty).
+- Minimal, readable, functional UI; no single karma/upvotes/downvotes—evaluation is three-axis only (clarity, evidence, novelty).
 
 ## Database
 

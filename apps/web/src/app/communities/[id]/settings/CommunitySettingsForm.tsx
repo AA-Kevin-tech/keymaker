@@ -20,7 +20,6 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
   const token = getToken();
   const [weightClarity, setWeightClarity] = useState(String(community.weightClarity ?? 1));
   const [weightEvidence, setWeightEvidence] = useState(String(community.weightEvidence ?? 1));
-  const [weightKindness, setWeightKindness] = useState(String(community.weightKindness ?? 1));
   const [weightNovelty, setWeightNovelty] = useState(String(community.weightNovelty ?? 1));
   const [decayHalfLifeSeconds, setDecayHalfLifeSeconds] = useState(
     String(community.decayHalfLifeSeconds ?? 86400)
@@ -37,10 +36,9 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
     }
     const wc = parseFloat(weightClarity);
     const we = parseFloat(weightEvidence);
-    const wk = parseFloat(weightKindness);
     const wn = parseFloat(weightNovelty);
     const decay = parseInt(decayHalfLifeSeconds, 10);
-    if ([wc, we, wk, wn].some(Number.isNaN)) {
+    if ([wc, we, wn].some(Number.isNaN)) {
       setError("Weights must be numbers.");
       return;
     }
@@ -55,7 +53,6 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
         {
           weightClarity: wc,
           weightEvidence: we,
-          weightKindness: wk,
           weightNovelty: wn,
           decayHalfLifeSeconds: decay,
         },
@@ -108,19 +105,6 @@ export function CommunitySettingsForm({ community, slug }: CommunitySettingsForm
               min="0"
               value={weightEvidence}
               onChange={(e) => setWeightEvidence(e.target.value)}
-            />
-          </div>
-          <div>
-            <label htmlFor="weightKindness" className="mb-1 block text-sm font-medium text-ink">
-              Weight: Kindness
-            </label>
-            <Input
-              id="weightKindness"
-              type="number"
-              step="0.1"
-              min="0"
-              value={weightKindness}
-              onChange={(e) => setWeightKindness(e.target.value)}
             />
           </div>
           <div>

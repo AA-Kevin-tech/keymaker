@@ -1,6 +1,6 @@
 # Keymaker
 
-A Reddit-style platform with **four-axis evaluation** (clarity, evidence, kindness, novelty). No upvotes, downvotes, or single karma score.
+A Reddit-style platform with **three-axis evaluation** (clarity, evidence, novelty). No upvotes, downvotes, or single karma score.
 
 ## Stack
 
@@ -102,7 +102,7 @@ Feed order is determined by a **score** computed per post:
 
 - **Formula:** `score = timeDecay * dampenedContentScore`
 - **Time decay:** `0.5^(ageSeconds / decayHalfLifeSeconds)` — newer posts rank higher. Each community has a `decayHalfLifeSeconds` (default 24h = 86400).
-- **Content score:** `weightClarity*cachedClarity + weightEvidence*cachedEvidence + weightKindness*cachedKindness + weightNovelty*cachedNovelty`. Each community defines the four weights (default 1).
+- **Content score:** `weightClarity*cachedClarity + weightEvidence*cachedEvidence + weightNovelty*cachedNovelty`. Each community defines the three weights (default 1).
 - **Low-signal dampening:** If a post has fewer than `MIN_RATINGS_DAMPENING` ratings (see `packages/shared`), its content score is scaled by `ratingCount / MIN_RATINGS_DAMPENING` so posts with very few ratings don't dominate.
 
 Constants (in `packages/shared/src/constants.ts`):
@@ -110,11 +110,11 @@ Constants (in `packages/shared/src/constants.ts`):
 - `MIN_RATINGS_DAMPENING` — minimum ratings before content score is fully counted (default 2).
 - `DEFAULT_DECAY_HALF_LIFE_SECONDS` — default half-life for time decay (86400 = 24 hours).
 
-Community settings (stored in DB, editable via API and community settings UI): `weightClarity`, `weightEvidence`, `weightKindness`, `weightNovelty`, `decayHalfLifeSeconds`.
+Community settings (stored in DB, editable via API and community settings UI): `weightClarity`, `weightEvidence`, `weightNovelty`, `decayHalfLifeSeconds`.
 
 ## Product rules
 
 - No upvotes, downvotes, agree/disagree, or single karma.
-- Content is evaluated on four axes only: clarity, evidence, kindness, novelty.
+- Content is evaluated on three axes only: clarity, evidence, novelty.
 - Ranking uses per-community weights and time decay; low-signal dampening applies.
 - See `.cursor/rules/keymaker-project.mdc` for full project rules.

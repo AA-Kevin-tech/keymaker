@@ -53,7 +53,6 @@ describe("reputation.service", () => {
         raterId,
         clarity: 2,
         evidence: 1,
-        kindness: 1,
         novelty: 0,
       },
     });
@@ -61,7 +60,6 @@ describe("reputation.service", () => {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     expect(user?.reputationClarity).toBe(2);
     expect(user?.reputationEvidence).toBe(1);
-    expect(user?.reputationKindness).toBe(1);
     expect(user?.reputationNovelty).toBe(0);
   });
 });

@@ -44,8 +44,8 @@ Tokens are returned from **POST /api/auth/register** and **POST /api/auth/login*
 | GET | /api/communities | No | — | List communities. |
 | GET | /api/communities/:slug | No | — | Community by slug. |
 | GET | /api/communities/:slug/feed | No | — | Ranked feed for community (query params as implemented). |
-| POST | /api/communities | Yes | `{ "name", "slug", "weightClarity?", "weightEvidence?", "weightKindness?", "weightNovelty?", "decayHalfLifeSeconds?" }` | Create community. Slug: alphanumeric and hyphens. |
-| PATCH | /api/communities/:slug | Yes | `{ "weightClarity?", "weightEvidence?", "weightKindness?", "weightNovelty?", "decayHalfLifeSeconds?" }` | Update community settings. |
+| POST | /api/communities | Yes | `{ "name", "slug", "weightClarity?", "weightEvidence?", "weightNovelty?", "decayHalfLifeSeconds?" }` | Create community. Slug: alphanumeric and hyphens. |
+| PATCH | /api/communities/:slug | Yes | `{ "weightClarity?", "weightEvidence?", "weightNovelty?", "decayHalfLifeSeconds?" }` | Update community settings. |
 
 ### Posts
 
@@ -69,11 +69,11 @@ Tokens are returned from **POST /api/auth/register** and **POST /api/auth/login*
 
 ### Ratings
 
-Four-axis scores: **clarity**, **evidence**, **kindness**, **novelty**. Each axis uses an integer in the range defined in `@keymaker/shared` (e.g. -2 to 2). See `packages/shared/src/constants.ts`.
+Three-axis scores: **clarity**, **evidence**, **novelty**. Each axis uses an integer in the range defined in `@keymaker/shared` (e.g. -2 to 2). See `packages/shared/src/constants.ts`.
 
 | Method | Path | Auth | Body | Description |
 |--------|------|------|------|-------------|
-| PUT | /api/ratings | Yes | `{ "targetType": "post" \| "comment", "targetId", "clarity", "evidence", "kindness", "novelty" }` | Create or update a rating for a post or comment. |
+| PUT | /api/ratings | Yes | `{ "targetType": "post" \| "comment", "targetId", "clarity", "evidence", "novelty" }` | Create or update a rating for a post or comment. |
 
 ### Moderation
 

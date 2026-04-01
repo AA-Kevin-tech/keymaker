@@ -8,7 +8,6 @@ export const upsertRatingSchema = z.object({
   targetId: z.string().min(1, "targetId is required").trim(),
   clarity: scoreSchema,
   evidence: scoreSchema,
-  kindness: scoreSchema,
   novelty: scoreSchema,
 });
 

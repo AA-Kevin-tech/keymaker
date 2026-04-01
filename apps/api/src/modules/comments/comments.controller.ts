@@ -17,7 +17,6 @@ function commentJson(
     author: c.author,
     cachedClarity: c.cachedClarity,
     cachedEvidence: c.cachedEvidence,
-    cachedKindness: c.cachedKindness,
     cachedNovelty: c.cachedNovelty,
     cachedScore: c.cachedScore,
     ratingCount: c.ratingCount,

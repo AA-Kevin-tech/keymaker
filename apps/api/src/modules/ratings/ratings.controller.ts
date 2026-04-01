@@ -19,7 +19,6 @@ export async function upsert(req: Request, res: Response): Promise<void> {
       raterId: rating.raterId,
       clarity: rating.clarity,
       evidence: rating.evidence,
-      kindness: rating.kindness,
       novelty: rating.novelty,
       createdAt: rating.createdAt.toISOString(),
       updatedAt: rating.updatedAt.toISOString(),

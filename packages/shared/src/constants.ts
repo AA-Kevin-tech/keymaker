@@ -3,7 +3,7 @@
  * Used by API (ranking, validation) and can be used by web for display.
  */
 
-export const AXIS_NAMES = ["clarity", "evidence", "kindness", "novelty"] as const;
+export const AXIS_NAMES = ["clarity", "evidence", "novelty"] as const;
 
 export const SCORE_MIN = -2;
 export const SCORE_MAX = 2;

@@ -3,14 +3,13 @@ import type { Post } from "@/lib/types";
 const AXES = [
   { key: "cachedClarity" as const, label: "Clarity" },
   { key: "cachedEvidence" as const, label: "Evidence" },
-  { key: "cachedKindness" as const, label: "Kindness" },
   { key: "cachedNovelty" as const, label: "Novelty" },
 ] as const;
 
 interface ScoreBadgesProps {
   post: Pick<
     Post,
-    "cachedClarity" | "cachedEvidence" | "cachedKindness" | "cachedNovelty" | "ratingCount"
+    "cachedClarity" | "cachedEvidence" | "cachedNovelty" | "ratingCount"
   >;
 }
 

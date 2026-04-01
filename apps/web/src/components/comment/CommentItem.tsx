@@ -63,7 +63,6 @@ export function CommentItem({
         <div className="mt-1.5 flex flex-wrap gap-2 text-xs text-meta">
           <span>C: {comment.cachedClarity.toFixed(1)}</span>
           <span>E: {comment.cachedEvidence.toFixed(1)}</span>
-          <span>K: {comment.cachedKindness.toFixed(1)}</span>
           <span>N: {comment.cachedNovelty.toFixed(1)}</span>
         </div>
       )}

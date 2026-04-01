@@ -4,14 +4,13 @@ import { MIN_RATINGS_DAMPENING } from "@keymaker/shared";
 /**
  * Compute feed score for a post. Readable formula: time decay * dampened content score.
  * - Time decay: 0.5^(ageSeconds / halfLifeSeconds)
- * - Content score: weighted sum of cached four dimensions
+ * - Content score: weighted sum of cached three dimensions
  * - Low-signal dampening: scale content score when ratingCount < MIN_RATINGS_DAMPENING
  */
 export function computePostScore(
   post: {
     cachedClarity: number;
     cachedEvidence: number;
-    cachedKindness: number;
     cachedNovelty: number;
     ratingCount: number;
     createdAt: Date;
@@ -19,7 +18,6 @@ export function computePostScore(
   community: {
     weightClarity: number;
     weightEvidence: number;
-    weightKindness: number;
     weightNovelty: number;
     decayHalfLifeSeconds: number;
   },
@@ -31,7 +29,6 @@ export function computePostScore(
   const contentScore =
     community.weightClarity * post.cachedClarity +
     community.weightEvidence * post.cachedEvidence +
-    community.weightKindness * post.cachedKindness +
     community.weightNovelty * post.cachedNovelty;
 
   const dampeningFactor =

@@ -33,7 +33,6 @@ export async function create(body: CreateCommunityBody, creatorUserId: string) {
       slug,
       weightClarity: body.weightClarity ?? 1,
       weightEvidence: body.weightEvidence ?? 1,
-      weightKindness: body.weightKindness ?? 1,
       weightNovelty: body.weightNovelty ?? 1,
       decayHalfLifeSeconds: body.decayHalfLifeSeconds ?? 86400,
     },
@@ -51,7 +50,6 @@ export async function updateSettings(
   const data: Record<string, number> = {};
   if (body.weightClarity !== undefined) data.weightClarity = body.weightClarity;
   if (body.weightEvidence !== undefined) data.weightEvidence = body.weightEvidence;
-  if (body.weightKindness !== undefined) data.weightKindness = body.weightKindness;
   if (body.weightNovelty !== undefined) data.weightNovelty = body.weightNovelty;
   if (body.decayHalfLifeSeconds !== undefined) data.decayHalfLifeSeconds = body.decayHalfLifeSeconds;
   if (Object.keys(data).length === 0) return community;

@@ -8,14 +8,11 @@ import type { RatingDimensions } from "@/lib/types";
 const AXES: { key: keyof RatingDimensions; label: string }[] = [
   { key: "clarity", label: "Clarity" },
   { key: "evidence", label: "Evidence" },
-  { key: "kindness", label: "Kindness" },
   { key: "novelty", label: "Novelty" },
 ];
 
 interface RatingWidgetProps {
   targetType: "post" | "comment";
-  targetId: string;
-  raterId: string;
   token: string | null;
   onSubmit: (dimensions: RatingDimensions) => Promise<void>;
   initial?: Partial<RatingDimensions>;
@@ -23,16 +20,15 @@ interface RatingWidgetProps {
 
 export function RatingWidget({
   targetType,
-  targetId,
-  raterId,
   token,
   onSubmit,
   initial = {},
 }: RatingWidgetProps) {
-  const [clarity, setClarity] = useState(initial.clarity ?? 0);
-  const [evidence, setEvidence] = useState(initial.evidence ?? 0);
-  const [kindness, setKindness] = useState(initial.kindness ?? 0);
-  const [novelty, setNovelty] = useState(initial.novelty ?? 0);
+  const [dims, setDims] = useState<RatingDimensions>({
+    clarity: initial.clarity ?? 0,
+    evidence: initial.evidence ?? 0,
+    novelty: initial.novelty ?? 0,
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,7 +48,7 @@ export function RatingWidget({
     setError(null);
     setLoading(true);
     try {
-      await onSubmit({ clarity, evidence, kindness, novelty });
+      await onSubmit(dims);
       setError(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to submit rating");
@@ -73,21 +69,8 @@ export function RatingWidget({
         <AxisInput
           key={key}
           label={label}
-          value={
-            key === "clarity"
-              ? clarity
-              : key === "evidence"
-                ? evidence
-                : key === "kindness"
-                  ? kindness
-                  : novelty
-          }
-          onChange={(v) => {
-            if (key === "clarity") setClarity(v);
-            else if (key === "evidence") setEvidence(v);
-            else if (key === "kindness") setKindness(v);
-            else setNovelty(v);
-          }}
+          value={dims[key]}
+          onChange={(v) => setDims((d) => ({ ...d, [key]: v }))}
           disabled={loading}
         />
       ))}

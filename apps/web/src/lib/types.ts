@@ -4,7 +4,6 @@ export interface User {
   createdAt: string;
   reputationClarity: number;
   reputationEvidence: number;
-  reputationKindness: number;
   reputationNovelty: number;
 }
 
@@ -14,7 +13,6 @@ export interface Community {
   slug: string;
   weightClarity?: number;
   weightEvidence?: number;
-  weightKindness?: number;
   weightNovelty?: number;
   decayHalfLifeSeconds?: number;
 }
@@ -29,7 +27,6 @@ export interface Post {
   author?: { id: string; username: string };
   cachedClarity: number;
   cachedEvidence: number;
-  cachedKindness: number;
   cachedNovelty: number;
   cachedScore: number;
   ratingCount: number;
@@ -48,7 +45,6 @@ export interface Comment {
   author?: { id: string; username: string };
   cachedClarity: number;
   cachedEvidence: number;
-  cachedKindness: number;
   cachedNovelty: number;
   cachedScore: number;
   ratingCount: number;
@@ -61,6 +57,5 @@ export interface Comment {
 export interface RatingDimensions {
   clarity: number;
   evidence: number;
-  kindness: number;
   novelty: number;
 }

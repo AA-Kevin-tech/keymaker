@@ -8,7 +8,7 @@ alwaysApply: true
 ## Product philosophy (non-negotiable)
 
 - No upvotes, downvotes, agree/disagree, or single karma number.
-- Evaluation is four-axis only: clarity, evidence, kindness, novelty.
+- Evaluation is three-axis only: clarity, evidence, novelty.
 - Do not silently introduce traditional social-media mechanics (likes, hearts, popularity scores).
 - Schema and UI must support multidimensional evaluation; do not flatten to one score in the product.
 

@@ -18,7 +18,6 @@ function toPostSummary(
     deletionState: deriveDeletionState(post),
     cachedClarity: post.cachedClarity,
     cachedEvidence: post.cachedEvidence,
-    cachedKindness: post.cachedKindness,
     cachedNovelty: post.cachedNovelty,
     cachedScore: post.cachedScore,
     ratingCount: post.ratingCount,

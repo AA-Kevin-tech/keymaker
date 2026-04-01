@@ -7,7 +7,7 @@ export default function HomePage() {
         Keymaker
       </h1>
       <p className="mb-6 max-w-xl text-meta">
-        Rate content on four axes: clarity, evidence, kindness, novelty.
+        Rate content on three axes: clarity, evidence, novelty.
       </p>
       <Link
         href="/communities"

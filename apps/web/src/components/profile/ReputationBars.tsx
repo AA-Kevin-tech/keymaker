@@ -1,9 +1,8 @@
 import type { User } from "@/lib/types";
 
-const AXES: { key: keyof Pick<User, "reputationClarity" | "reputationEvidence" | "reputationKindness" | "reputationNovelty">; label: string }[] = [
+const AXES: { key: keyof Pick<User, "reputationClarity" | "reputationEvidence" | "reputationNovelty">; label: string }[] = [
   { key: "reputationClarity", label: "Clarity" },
   { key: "reputationEvidence", label: "Evidence" },
-  { key: "reputationKindness", label: "Kindness" },
   { key: "reputationNovelty", label: "Novelty" },
 ];
 
@@ -21,7 +20,7 @@ function barWidth(value: number): string {
 export function ReputationBars({ user }: ReputationBarsProps) {
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-medium text-ink">Reputation (four axes)</h2>
+      <h2 className="text-sm font-medium text-ink">Reputation (three axes)</h2>
       {AXES.map(({ key, label }) => (
         <div key={key}>
           <div className="mb-0.5 flex justify-between text-sm">

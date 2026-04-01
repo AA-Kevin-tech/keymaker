@@ -14,24 +14,22 @@ async function ratingAggregate(targetType: string, targetId: string) {
   if (n === 0) {
     return {
       count: 0,
-      averages: null as { clarity: number; evidence: number; kindness: number; novelty: number } | null,
+      averages: null as { clarity: number; evidence: number; novelty: number } | null,
     };
   }
   const sum = rows.reduce(
     (a, r) => ({
       clarity: a.clarity + r.clarity,
       evidence: a.evidence + r.evidence,
-      kindness: a.kindness + r.kindness,
       novelty: a.novelty + r.novelty,
     }),
-    { clarity: 0, evidence: 0, kindness: 0, novelty: 0 }
+    { clarity: 0, evidence: 0, novelty: 0 }
   );
   return {
     count: n,
     averages: {
       clarity: sum.clarity / n,
       evidence: sum.evidence / n,
-      kindness: sum.kindness / n,
       novelty: sum.novelty / n,
     },
   };
@@ -73,7 +71,6 @@ export async function getPostReview(moderatorId: string, postId: string) {
           username: true,
           reputationClarity: true,
           reputationEvidence: true,
-          reputationKindness: true,
           reputationNovelty: true,
           createdAt: true,
         },
@@ -116,7 +113,6 @@ export async function getPostReview(moderatorId: string, postId: string) {
       weights: {
         clarity: post.community.weightClarity,
         evidence: post.community.weightEvidence,
-        kindness: post.community.weightKindness,
         novelty: post.community.weightNovelty,
       },
       decayHalfLifeSeconds: post.community.decayHalfLifeSeconds,
@@ -132,7 +128,6 @@ export async function getPostReview(moderatorId: string, postId: string) {
       authorId: post.authorId,
       cachedClarity: post.cachedClarity,
       cachedEvidence: post.cachedEvidence,
-      cachedKindness: post.cachedKindness,
       cachedNovelty: post.cachedNovelty,
       cachedScore: post.cachedScore,
       ratingCount: post.ratingCount,
@@ -155,7 +150,6 @@ export async function getPostReview(moderatorId: string, postId: string) {
     scoreSummary: {
       cachedClarity: post.cachedClarity,
       cachedEvidence: post.cachedEvidence,
-      cachedKindness: post.cachedKindness,
       cachedNovelty: post.cachedNovelty,
       cachedScore: post.cachedScore,
       ratingCount: post.ratingCount,
@@ -193,7 +187,6 @@ export async function getCommentReview(moderatorId: string, commentId: string) {
           username: true,
           reputationClarity: true,
           reputationEvidence: true,
-          reputationKindness: true,
           reputationNovelty: true,
           createdAt: true,
         },
@@ -259,7 +252,6 @@ export async function getCommentReview(moderatorId: string, commentId: string) {
       parentId: comment.parentId,
       cachedClarity: comment.cachedClarity,
       cachedEvidence: comment.cachedEvidence,
-      cachedKindness: comment.cachedKindness,
       cachedNovelty: comment.cachedNovelty,
       cachedScore: comment.cachedScore,
       ratingCount: comment.ratingCount,
@@ -295,7 +287,6 @@ export async function getCommentReview(moderatorId: string, commentId: string) {
     scoreSummary: {
       cachedClarity: comment.cachedClarity,
       cachedEvidence: comment.cachedEvidence,
-      cachedKindness: comment.cachedKindness,
       cachedNovelty: comment.cachedNovelty,
       cachedScore: comment.cachedScore,
       ratingCount: comment.ratingCount,

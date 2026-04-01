@@ -62,7 +62,6 @@ async function main() {
       slug: "general",
       weightClarity: 1,
       weightEvidence: 1,
-      weightKindness: 1,
       weightNovelty: 1,
       decayHalfLifeSeconds: 86400,
     },
@@ -74,7 +73,7 @@ async function main() {
     create: {
       id: "seed-post-1",
       title: "Welcome to Keymaker",
-      body: "This is a place for four-axis evaluation: clarity, evidence, kindness, novelty.",
+      body: "This is a place for three-axis evaluation: clarity, evidence, novelty.",
       communityId: general.id,
       authorId: alice.id,
     },
@@ -99,14 +98,13 @@ async function main() {
         raterId: bob.id,
       },
     },
-    update: { clarity: 1, evidence: 1, kindness: 2, novelty: 0 },
+    update: { clarity: 1, evidence: 1, novelty: 0 },
     create: {
       targetType: "post",
       targetId: post1.id,
       raterId: bob.id,
       clarity: 1,
       evidence: 1,
-      kindness: 2,
       novelty: 0,
     },
   });
@@ -119,14 +117,13 @@ async function main() {
         raterId: alice.id,
       },
     },
-    update: { clarity: 2, evidence: 0, kindness: 2, novelty: 0 },
+    update: { clarity: 2, evidence: 0, novelty: 0 },
     create: {
       targetType: "comment",
       targetId: comment1.id,
       raterId: alice.id,
       clarity: 2,
       evidence: 0,
-      kindness: 2,
       novelty: 0,
     },
   });

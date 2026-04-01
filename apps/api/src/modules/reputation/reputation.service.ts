@@ -1,7 +1,7 @@
 import { prisma } from "../../db/prisma.js";
 
 /**
- * Recompute a user's four reputation values from all ratings on their posts and comments.
+ * Recompute a user's three reputation values from all ratings on their posts and comments.
  * Simple mean per dimension; no time decay in MVP.
  */
 export async function recomputeForUser(userId: string): Promise<void> {
@@ -14,12 +14,12 @@ export async function recomputeForUser(userId: string): Promise<void> {
 
   const postRatings = await prisma.rating.findMany({
     where: { targetType: "post", targetId: { in: postIds } },
-    select: { clarity: true, evidence: true, kindness: true, novelty: true },
+    select: { clarity: true, evidence: true, novelty: true },
   });
 
   const commentRatings = await prisma.rating.findMany({
     where: { targetType: "comment", targetId: { in: commentIds } },
-    select: { clarity: true, evidence: true, kindness: true, novelty: true },
+    select: { clarity: true, evidence: true, novelty: true },
   });
 
   const all = [...postRatings, ...commentRatings];
@@ -29,7 +29,6 @@ export async function recomputeForUser(userId: string): Promise<void> {
       data: {
         reputationClarity: 0,
         reputationEvidence: 0,
-        reputationKindness: 0,
         reputationNovelty: 0,
       },
     });
@@ -40,10 +39,9 @@ export async function recomputeForUser(userId: string): Promise<void> {
     (acc, r) => ({
       clarity: acc.clarity + r.clarity,
       evidence: acc.evidence + r.evidence,
-      kindness: acc.kindness + r.kindness,
       novelty: acc.novelty + r.novelty,
     }),
-    { clarity: 0, evidence: 0, kindness: 0, novelty: 0 }
+    { clarity: 0, evidence: 0, novelty: 0 }
   );
   const n = all.length;
   await prisma.user.update({
@@ -51,7 +49,6 @@ export async function recomputeForUser(userId: string): Promise<void> {
     data: {
       reputationClarity: sum.clarity / n,
       reputationEvidence: sum.evidence / n,
-      reputationKindness: sum.kindness / n,
       reputationNovelty: sum.novelty / n,
     },
   });

@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Keymaker",
-  description: "Four-axis evaluation: clarity, evidence, kindness, novelty.",
+  description: "Three-axis evaluation: clarity, evidence, novelty.",
 };
 
 export default function RootLayout({

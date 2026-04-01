@@ -59,7 +59,6 @@ describe("aggregate.service", () => {
         raterId,
         clarity: 2,
         evidence: 0,
-        kindness: 0,
         novelty: 0,
       },
     });
@@ -70,7 +69,6 @@ describe("aggregate.service", () => {
         raterId: userId,
         clarity: 0,
         evidence: 2,
-        kindness: 0,
         novelty: 0,
       },
     });

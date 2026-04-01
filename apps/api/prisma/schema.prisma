@@ -51,7 +51,6 @@ model User {
 
   reputationClarity  Float @default(0)
   reputationEvidence Float @default(0)
-  reputationKindness Float @default(0)
   reputationNovelty  Float @default(0)
 
   posts             Post[]
@@ -91,7 +90,6 @@ model Community {
   createdAt            DateTime @default(now())
   weightClarity        Float    @default(1)
   weightEvidence       Float    @default(1)
-  weightKindness       Float    @default(1)
   weightNovelty        Float    @default(1)
   decayHalfLifeSeconds Int      @default(86400)
 
@@ -116,7 +114,6 @@ model Post {
 
   cachedClarity  Float @default(0)
   cachedEvidence Float @default(0)
-  cachedKindness Float @default(0)
   cachedNovelty  Float @default(0)
   cachedScore   Float @default(0)
   ratingCount   Int   @default(0)
@@ -142,7 +139,6 @@ model Comment {
 
   cachedClarity  Float @default(0)
   cachedEvidence Float @default(0)
-  cachedKindness Float @default(0)
   cachedNovelty  Float @default(0)
   cachedScore   Float @default(0)
   ratingCount   Int   @default(0)
@@ -164,7 +160,6 @@ model Rating {
   raterId    String   @map("rater_id")
   clarity    Int
   evidence   Int
-  kindness   Int
   novelty    Int
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt

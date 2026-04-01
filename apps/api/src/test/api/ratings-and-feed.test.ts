@@ -49,7 +49,6 @@ describe("API ratings and feed", () => {
         targetId: postId,
         clarity: 1,
         evidence: 1,
-        kindness: 2,
         novelty: 0,
       })
       .expect(200);
@@ -74,6 +73,6 @@ describe("API ratings and feed", () => {
     const res = await request(app).get(`/api/users/${username}`).expect(200);
     expect(res.body.reputationClarity).toBe(1);
     expect(res.body.reputationEvidence).toBe(1);
-    expect(res.body.reputationKindness).toBe(2);
+    expect(res.body.reputationNovelty).toBe(0);
   });
 });

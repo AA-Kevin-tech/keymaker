@@ -21,7 +21,7 @@ export function validateRatingBody(body: unknown): ValidationResult {
     }
     return { valid: true };
   };
-  for (const key of ["clarity", "evidence", "kindness", "novelty"]) {
+  for (const key of ["clarity", "evidence", "novelty"]) {
     const r = score(key);
     if (!r.valid) return r;
   }

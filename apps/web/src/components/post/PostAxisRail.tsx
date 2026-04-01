@@ -3,14 +3,13 @@ import type { Post } from "@/lib/types";
 const AXES = [
   { key: "cachedClarity" as const, short: "C" },
   { key: "cachedEvidence" as const, short: "E" },
-  { key: "cachedKindness" as const, short: "K" },
   { key: "cachedNovelty" as const, short: "N" },
 ] as const;
 
 interface PostAxisRailProps {
   post: Pick<
     Post,
-    "cachedClarity" | "cachedEvidence" | "cachedKindness" | "cachedNovelty" | "ratingCount"
+    "cachedClarity" | "cachedEvidence" | "cachedNovelty" | "ratingCount"
   >;
 }
 

@@ -19,7 +19,6 @@ const userListSelect = {
   createdAt: true,
   reputationClarity: true,
   reputationEvidence: true,
-  reputationKindness: true,
   reputationNovelty: true,
 } as const;
 
@@ -160,7 +159,6 @@ export async function listAdminUsers(moderatorId: string, query: AdminUserListQu
         createdAt: u.createdAt.toISOString(),
         reputationClarity: u.reputationClarity,
         reputationEvidence: u.reputationEvidence,
-        reputationKindness: u.reputationKindness,
         reputationNovelty: u.reputationNovelty,
         ...(platform ? { email: u.email } : {}),
         activeRestrictionSummary: u.restrictionsSubject.map((r) => ({
@@ -194,7 +192,6 @@ export async function getAdminUserDetail(moderatorId: string, userId: string) {
       createdAt: true,
       reputationClarity: true,
       reputationEvidence: true,
-      reputationKindness: true,
       reputationNovelty: true,
     },
   });
@@ -326,7 +323,6 @@ export async function getAdminUserDetail(moderatorId: string, userId: string) {
     reputationSummary: {
       clarity: user.reputationClarity,
       evidence: user.reputationEvidence,
-      kindness: user.reputationKindness,
       novelty: user.reputationNovelty,
     },
     effectiveModerationState,

@@ -25,7 +25,6 @@ export async function getFeed(req: Request, res: Response): Promise<void> {
       author: post.author,
       cachedClarity: post.cachedClarity,
       cachedEvidence: post.cachedEvidence,
-      cachedKindness: post.cachedKindness,
       cachedNovelty: post.cachedNovelty,
       cachedScore: post.cachedScore,
       ratingCount: post.ratingCount,

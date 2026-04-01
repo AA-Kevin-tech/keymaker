@@ -9,7 +9,6 @@ export const createCommunitySchema = z.object({
     .refine((s) => /^[a-z0-9-]+$/.test(s), "slug must be alphanumeric and hyphens only"),
   weightClarity: z.number().optional(),
   weightEvidence: z.number().optional(),
-  weightKindness: z.number().optional(),
   weightNovelty: z.number().optional(),
   decayHalfLifeSeconds: z.number().int().positive().optional(),
 });
@@ -19,7 +18,6 @@ export type CreateCommunityInput = z.infer<typeof createCommunitySchema>;
 export const updateCommunitySettingsSchema = z.object({
   weightClarity: z.number().optional(),
   weightEvidence: z.number().optional(),
-  weightKindness: z.number().optional(),
   weightNovelty: z.number().optional(),
   decayHalfLifeSeconds: z.number().int().positive().optional(),
 });

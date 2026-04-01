@@ -18,7 +18,6 @@ export async function getByUsername(req: Request, res: Response): Promise<void> 
     createdAt: user.createdAt.toISOString(),
     reputationClarity: user.reputationClarity,
     reputationEvidence: user.reputationEvidence,
-    reputationKindness: user.reputationKindness,
     reputationNovelty: user.reputationNovelty,
   });
 }
@@ -40,7 +39,6 @@ export async function getById(req: Request, res: Response): Promise<void> {
     createdAt: user.createdAt.toISOString(),
     reputationClarity: user.reputationClarity,
     reputationEvidence: user.reputationEvidence,
-    reputationKindness: user.reputationKindness,
     reputationNovelty: user.reputationNovelty,
   });
 }

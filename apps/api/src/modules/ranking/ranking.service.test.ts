@@ -5,7 +5,6 @@ describe("ranking.service", () => {
   const community = {
     weightClarity: 1,
     weightEvidence: 1,
-    weightKindness: 1,
     weightNovelty: 1,
     decayHalfLifeSeconds: 86400,
   };
@@ -15,7 +14,6 @@ describe("ranking.service", () => {
     const base = {
       cachedClarity: 0,
       cachedEvidence: 0,
-      cachedKindness: 0,
       cachedNovelty: 0,
       ratingCount: 5,
       createdAt: new Date(now.getTime() - 1000),
@@ -34,7 +32,6 @@ describe("ranking.service", () => {
     const sameContent = {
       cachedClarity: 1,
       cachedEvidence: 1,
-      cachedKindness: 1,
       cachedNovelty: 1,
       ratingCount: 5,
     };
@@ -57,7 +54,6 @@ describe("ranking.service", () => {
     const content = {
       cachedClarity: 2,
       cachedEvidence: 2,
-      cachedKindness: 2,
       cachedNovelty: 2,
       createdAt,
     };
@@ -79,7 +75,6 @@ describe("ranking.service", () => {
     const post = {
       cachedClarity: 2,
       cachedEvidence: 0,
-      cachedKindness: 0,
       cachedNovelty: 0,
       ratingCount: 5,
       createdAt: new Date(now.getTime() - 1000),

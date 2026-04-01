@@ -10,7 +10,6 @@ export interface UserResponse {
   createdAt: string;
   reputationClarity: number;
   reputationEvidence: number;
-  reputationKindness: number;
   reputationNovelty: number;
 }
 
@@ -20,7 +19,6 @@ export interface CommunityResponse {
   slug: string;
   weightClarity: number;
   weightEvidence: number;
-  weightKindness: number;
   weightNovelty: number;
   decayHalfLifeSeconds: number;
   createdAt?: string;
@@ -35,7 +33,6 @@ export interface PostResponse {
   author?: { id: string; username: string };
   cachedClarity: number;
   cachedEvidence: number;
-  cachedKindness: number;
   cachedNovelty: number;
   cachedScore: number;
   ratingCount: number;
@@ -56,7 +53,6 @@ export interface CommentResponse {
   author?: { id: string; username: string };
   cachedClarity: number;
   cachedEvidence: number;
-  cachedKindness: number;
   cachedNovelty: number;
   cachedScore: number;
   ratingCount: number;
@@ -73,7 +69,6 @@ export interface RatingResponse {
   raterId: string;
   clarity: number;
   evidence: number;
-  kindness: number;
   novelty: number;
   createdAt: string;
   updatedAt: string;
@@ -85,7 +80,6 @@ export interface UpsertRatingBody {
   raterId: string;
   clarity: number;
   evidence: number;
-  kindness: number;
   novelty: number;
 }
 

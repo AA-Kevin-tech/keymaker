@@ -62,8 +62,6 @@ export function PostView({ post, comments }: PostViewProps) {
         <h2 className="mb-3 text-lg font-medium text-ink">Rate this post</h2>
         <RatingWidget
           targetType="post"
-          targetId={post.id}
-          raterId=""
           token={token}
           onSubmit={async (dimensions) => {
             if (!token) throw new Error("Not logged in");

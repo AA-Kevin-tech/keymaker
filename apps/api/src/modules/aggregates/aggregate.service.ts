@@ -15,7 +15,6 @@ export async function recomputeForTarget(targetType: TargetType, targetId: strin
     const defaults = {
       cachedClarity: 0,
       cachedEvidence: 0,
-      cachedKindness: 0,
       cachedNovelty: 0,
       cachedScore: 0,
       ratingCount: 0,
@@ -28,27 +27,24 @@ export async function recomputeForTarget(targetType: TargetType, targetId: strin
     return;
   }
 
-  type Sum = { clarity: number; evidence: number; kindness: number; novelty: number };
+  type Sum = { clarity: number; evidence: number; novelty: number };
   type RatingRow = (typeof ratings)[number];
   const sum = ratings.reduce(
     (acc: Sum, r: RatingRow) => ({
       clarity: acc.clarity + r.clarity,
       evidence: acc.evidence + r.evidence,
-      kindness: acc.kindness + r.kindness,
       novelty: acc.novelty + r.novelty,
     }),
-    { clarity: 0, evidence: 0, kindness: 0, novelty: 0 } satisfies Sum
+    { clarity: 0, evidence: 0, novelty: 0 } satisfies Sum
   );
   const cachedClarity = sum.clarity / count;
   const cachedEvidence = sum.evidence / count;
-  const cachedKindness = sum.kindness / count;
   const cachedNovelty = sum.novelty / count;
-  const cachedScore = cachedClarity + cachedEvidence + cachedKindness + cachedNovelty;
+  const cachedScore = cachedClarity + cachedEvidence + cachedNovelty;
 
   const data = {
     cachedClarity,
     cachedEvidence,
-    cachedKindness,
     cachedNovelty,
     cachedScore,
     ratingCount: count,

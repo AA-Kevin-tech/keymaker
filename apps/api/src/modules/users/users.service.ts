@@ -9,7 +9,6 @@ export async function getById(id: string) {
       createdAt: true,
       reputationClarity: true,
       reputationEvidence: true,
-      reputationKindness: true,
       reputationNovelty: true,
     },
   });
@@ -25,7 +24,6 @@ export async function getByUsername(username: string) {
       createdAt: true,
       reputationClarity: true,
       reputationEvidence: true,
-      reputationKindness: true,
       reputationNovelty: true,
     },
   });
